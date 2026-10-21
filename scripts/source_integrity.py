@@ -15,6 +15,7 @@ MANIFEST = ROOT / 'source-integrity.json'
 def snapshot():
     paths = sorted((ROOT / 'Sources').glob('*.swift'))
     paths += sorted((ROOT / 'scripts').glob('*.py'))
+    paths += sorted((ROOT / 'Config').glob('*.plist'))
     paths += [ROOT / 'project.yml', ROOT / '.github/workflows/ios-build.yml']
     result = {}
     for path in paths:

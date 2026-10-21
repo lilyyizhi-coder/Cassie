@@ -7,8 +7,9 @@
   "Sources/PhotoIndex.swift": "4b15f0c8e562e4492dc32c3d7d73ee2b2b3c4a7a5c02cc65c5e29640036e29d2",
   "Sources/ShortcutService.swift": "7fbb39711eda8c2d9c9c1cf6c7a710c96d0e372739147ae280ff47b39ea9f573",
   "Sources/SpeechService.swift": "a50fe22278409756344156f6282c51b6debfb2a9e087ac9ceb10fdc45eac8d43",
-  "scripts/source_integrity.py": "026fab2252fb698923a0abf28544b8f697b0dc5f6de0858fc6c62726bb2b6ca9",
+  "scripts/source_integrity.py": "72e52d6a9285bfe100bd1a8ca5931cf730826838200ed82de9b9ca16f1ed0949",
   "scripts/verify_app_text.py": "4748931e4960f9e8fa45c3b86abad4b2de0e37ce4873eecf6485ba966e37c6a0",
-  "project.yml": "4097a18cd599c02f9cfa89d0ebc745f8bec4547e8bd02ad93b7d2c3300798046",
-  ".github/workflows/ios-build.yml": "d990a0628ec877204216642cc09fcee624e828ccb76410b0cfccfd4ddef064e4"
+  "Config/Info.plist": "6968835c0399cac859c9f21208fd97141fde189172a3c33dc5b161d62a09f0e2",
+  "project.yml": "97080478c1c1d294e9a2ef5ca56ef039dd899e540a31f6d74f8283a240cf2f07",
+  ".github/workflows/ios-build.yml": "b29f1b4d856c2df845dc0e79af6d7f076fad6a40123961767af0bd17c0f7a303"
 }

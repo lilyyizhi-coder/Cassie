@@ -8,14 +8,8 @@ settings:
     SWIFT_VERSION: "5.0"
     CURRENT_PROJECT_VERSION: "2"
     MARKETING_VERSION: "0.1.1"
-    INFOPLIST_KEY_CFBundleDisplayName: Cassie
-    INFOPLIST_KEY_NSPhotoLibraryUsageDescription: Cassie 读取你授权的照片与截图，在本机识别文字，帮助你查找资料。
-    INFOPLIST_KEY_NSMicrophoneUsageDescription: 你发起语音请求时，Cassie 使用麦克风听取指令。
-    INFOPLIST_KEY_NSSpeechRecognitionUsageDescription: Cassie 将你的语音指令转为文字。本版本仅在离线识别可用时录音。
-    INFOPLIST_KEY_NSCalendarsFullAccessUsageDescription: Cassie 读取你选中的课表日历，回答课程名称、地点和开始时间。
-    INFOPLIST_KEY_CFBundleDevelopmentRegion: zh_CN
-    INFOPLIST_KEY_PHPhotoLibraryPreventAutomaticLimitedAccessAlert: YES
-    GENERATE_INFOPLIST_FILE: YES
+    GENERATE_INFOPLIST_FILE: NO
+    INFOPLIST_FILE: Config/Info.plist
 targets:
   Cassie:
     type: application
@@ -26,6 +20,3 @@ targets:
       base:
         PRODUCT_BUNDLE_IDENTIFIER: com.cassieassistant.ios
         TARGETED_DEVICE_FAMILY: "1"
-        INFOPLIST_KEY_UILaunchScreen_Generation: YES
-        INFOPLIST_KEY_UIApplicationSceneManifest_Generation: YES
-        INFOPLIST_KEY_UISupportedInterfaceOrientations: UIInterfaceOrientationPortrait
