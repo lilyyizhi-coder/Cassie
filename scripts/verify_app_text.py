@@ -8,10 +8,11 @@ def main():
     app = Path(sys.argv[1])
     info = plistlib.loads((app / 'Info.plist').read_bytes())
     executable = (app / info['CFBundleExecutable']).read_bytes()
+    # Swift may embed short strings inside machine instructions rather than
+    # store contiguous UTF-8 bytes. Check literals longer than 15 UTF-8 bytes.
     expected = [
         '\u628a\u65e5\u5e38\u5c0f\u4e8b\u4ea4\u7ed9\u6211',
         '\u6309\u4e0b\u5f00\u59cb\u8bf4\u8bdd',
-        '\u5e38\u7528\u529f\u80fd',
     ]
     for text in expected:
         if text.encode('utf-8') not in executable:
