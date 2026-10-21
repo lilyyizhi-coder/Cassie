@@ -46,6 +46,7 @@ struct CassieHomeView: View {
                     }
                     Text("常用功能").font(.title3.bold())
                     LazyVGrid(columns: [GridItem(.flexible()), GridItem(.flexible())], spacing: 12) {
+                        feature("Dayplan", "安排今天的事情与路线", "list.bullet.clipboard", .dayplan)
                         feature("截图资料", "搜索文字，查看原图", "text.viewfinder", .photos(""))
                         feature("课表日程", "连接 Celechron 课表", "calendar", .schedule)
                         feature("语音备忘", "随口记下，保存在本机", "note.text", .notes)
@@ -73,6 +74,7 @@ struct CassieHomeView: View {
                 case .notes: NotesView()
                 case .messages: MessageDraftView()
                 case .connections: ConnectionsView()
+                case .dayplan: DayPlanView()
                 }
             }
         }
@@ -143,7 +145,10 @@ struct CassieHomeView: View {
         guard !text.isEmpty else { return }
         input = text
         matchCount = 0
-        if ["截图", "照片", "相册", "找图"].contains(where: text.contains) {
+        if ["dayplan", "day plan", "安排今天", "规划今天", "今日计划", "制定日程"].contains(where: text.lowercased().contains) {
+            answer("在 Dayplan 中列出事情、地点和时长，我会按时间限制与通勤估计安排顺序。")
+            path.append(.dayplan)
+        } else if ["截图", "照片", "相册", "找图"].contains(where: text.contains) {
             guard photos.canRead else {
                 answer("请先在截图资料页授权相册访问，再扫描图片建立文字索引。")
                 path.append(.photos(text)); return
@@ -210,6 +215,6 @@ struct CassieHomeView: View {
     }
 
     private enum Destination: Hashable {
-        case photos(String), schedule, notes, messages, connections
+        case photos(String), schedule, notes, messages, connections, dayplan
     }
 }

@@ -1,6 +1,7 @@
 """Check representative Chinese UI and permission strings in an archive."""
 from pathlib import Path
 import plistlib
+import re
 import sys
 
 
@@ -22,9 +23,11 @@ def main():
         text = info.get(key, '')
         if not text or '\ufffd' in text or not any('\u4e00' <= char <= '\u9fff' for char in text):
             raise ValueError('Missing or damaged Chinese permission description: ' + key)
-    if info.get('CFBundleShortVersionString') != '0.1.1':
+    project = (Path(__file__).resolve().parents[1] / 'project.yml').read_text(encoding='utf-8')
+    version = re.search(r'MARKETING_VERSION:\s*"?([0-9.]+)', project).group(1)
+    if info.get('CFBundleShortVersionString') != version:
         raise ValueError('Unexpected version: ' + str(info.get('CFBundleShortVersionString')))
-    print('PASS: Chinese UI strings and four Chinese permission descriptions in app version 0.1.1.')
+    print('PASS: Chinese UI strings and four Chinese permission descriptions in app version', version)
 
 
 if __name__ == '__main__':
