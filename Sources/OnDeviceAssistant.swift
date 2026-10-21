@@ -57,8 +57,14 @@ final class OnDeviceAssistant {
 
     func extractTasks(from text: String) async throws -> [ExtractedTask] {
         let session = LanguageModelSession(instructions: """
-        从用户文字中提取当天要做的事情列表。忠实原文：不添加没有提到的任务，不猜测没有说明的信息。
-        时间按24小时制；“下午”“晚上”换算成12小时之后的时间；只有出现“截止”“前完成”“之前交”才填截止时间，否则明确说出的钟点填开始时间。
+        从用户文字中提取当天要做的事情列表。忠实原文：不添加没有提到的任务，不猜测没有说明的信息；没有任务时 tasks 为空列表。
+        每个任务的字段规则：
+        title 是任务名称，不超过20个字，忠实原文；
+        durationMinutes 是预计用时（分钟），范围5到720，原文没说就填30；
+        startClock 是固定开始时间，格式HH:MM，没有则填空字符串；
+        deadlineClock 是完成截止时间，格式HH:MM，没有则填空字符串；
+        placeHint 是原文提到的地点名称，没有则填空字符串。
+        时间按24小时制；“下午”“晚上”换算成12小时之后的时间；只有出现“截止”“前完成”“之前交”才填 deadlineClock，否则明确说出的钟点填 startClock。
         """)
         let result = try await session.respond(to: "提取以下文字中的任务：\n\(text)",
                                               generating: ExtractedTaskList.self)
@@ -98,21 +104,15 @@ final class OnDeviceAssistant {
 @available(iOS 26.0, *)
 @Generable
 struct ExtractedTaskList {
-    @Generable(description: "按原文顺序提取的任务，没有任务时为空列表")
     var tasks: [ExtractedTask] = []
 }
 
 @available(iOS 26.0, *)
 @Generable
 struct ExtractedTask {
-    @Generable(description: "任务名称，不超过20个字，忠实原文")
     var title: String = ""
-    @Generable(description: "预计用时（分钟），5到720；原文没说就填30")
     var durationMinutes: Int = 30
-    @Generable(description: "固定开始时间，格式HH:MM；没有则为空字符串")
     var startClock: String = ""
-    @Generable(description: "完成截止时间，格式HH:MM；没有则为空字符串")
     var deadlineClock: String = ""
-    @Generable(description: "原文提到的地点名称；没有则为空字符串")
     var placeHint: String = ""
 }

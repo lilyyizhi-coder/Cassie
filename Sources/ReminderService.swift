@@ -33,7 +33,7 @@ final class ReminderStore: ObservableObject {
         didSet {
             guard settings != oldValue else { return }
             do { try LocalStore.save(settings, to: "reminders.json") }
-            catch { error = "提醒设置未能保存：\(error.localizedDescription)" }
+            catch let problem { self.error = "提醒设置未能保存：\(problem.localizedDescription)" }
             refreshAll()
         }
     }
