@@ -23,10 +23,8 @@ final class OnDeviceAssistant {
                 return "此设备不支持 Apple Intelligence"
             case .appleIntelligenceNotEnabled:
                 return "请先在系统设置中开启 Apple Intelligence，然后重启 Cassie"
-            case .languageNotSupported:
-                return "当前系统语言暂不支持端侧模型，请在系统设置的 Apple Intelligence 中检查语言"
-            @unknown default:
-                return "端侧模型暂不可用"
+            default:
+                return "端侧模型暂不可用，请在系统设置的 Apple Intelligence 中检查设备、语言与地区"
             }
         @unknown default:
             return "端侧模型暂不可用"
@@ -44,7 +42,7 @@ final class OnDeviceAssistant {
             let task = Task {
                 do {
                     for try await partial in session.streamResponse(to: prompt) {
-                        continuation.yield(partial)
+                        continuation.yield(partial.content)
                     }
                     continuation.finish()
                 } catch {
@@ -68,7 +66,7 @@ final class OnDeviceAssistant {
         """)
         let result = try await session.respond(to: "提取以下文字中的任务：\n\(text)",
                                               generating: ExtractedTaskList.self)
-        return result.tasks
+        return result.content.tasks
     }
 
     func candidates(from tasks: [ExtractedTask], sourceText: String, photoID: String?) -> [CaptureCandidate] {
