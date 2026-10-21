@@ -101,7 +101,10 @@ final class ProductivityStore: ObservableObject {
     func recommendedMinutes(for title: String) -> Int? {
         let samples = data.sessions.filter { $0.title == title && $0.seconds >= 60 }.prefix(5)
         guard !samples.isEmpty else { return nil }
-        return max(5, Int(ceil(samples.map(\.seconds).reduce(0, +) / Double(samples.count) / 60 / 5)) * 5)
+        let total: TimeInterval = samples.reduce(0.0) { $0 + $1.seconds }
+        let averageMinutes: Double = total / Double(samples.count) / 60.0
+        let roundedMinutes: Int = Int(ceil(averageMinutes / 5.0)) * 5
+        return max(5, roundedMinutes)
     }
 }
 
@@ -145,9 +148,9 @@ enum PlanCapture {
             task.sourceText = raw; task.sourcePhotoID = photoID
             var hints = ["请确认任务名称、地图地点和用时"]
             if let match = groups(#"([0-9]+(?:\.[0-9]+)?|[一二两三四五六七八九十半]+)\s*(小时|分钟|[hH])"#, raw),
-               let amount = number(match[1]) {
+               let amount = number(match[1]), amount.isFinite {
                 let minutes = amount * (match[2] == "分钟" ? 1 : 60)
-                task.duration = min(720, max(5, Int(ceil(minutes / 5)) * 5))
+                task.duration = Int(ceil(min(720, max(5, minutes)) / 5)) * 5
                 hints.append("识别用时\(task.duration)分钟，请核对区间和半小时等表述")
             } else { hints.append("用时暂填30分钟，需修改或确认") }
             if let match = groups(#"(凌晨|早上|上午|中午|下午|晚上)?\s*([0-9]{1,2}|[一二两三四五六七八九十]+)\s*(?:[:：.点时])\s*([0-9]{1,2}|半|[一二三四五六七八九十]+)?"#, raw),

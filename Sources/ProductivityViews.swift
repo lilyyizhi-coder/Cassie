@@ -77,6 +77,7 @@ struct PlanCaptureView: View {
             var validation = updated
             validation.origin = updated.origin ?? candidates.first?.task.place
             try DayPlanEngine.validate(validation)
+            try LocalStore.save(updated, to: "dayplan.json")
             planner.draft = updated
             onImported?()
             dismiss()

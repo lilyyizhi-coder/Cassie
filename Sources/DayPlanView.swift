@@ -59,7 +59,15 @@ struct DayPlanView: View {
                             }
                         }
                     }
-                }.onDelete { store.draft.tasks.remove(atOffsets: $0) }
+                }.onDelete { offsets in
+                    let removed = Set(offsets.map { store.draft.tasks[$0].id })
+                    var updated = store.draft
+                    updated.tasks.remove(atOffsets: offsets)
+                    for index in updated.tasks.indices {
+                        updated.tasks[index].prerequisiteIDs?.removeAll { removed.contains($0) }
+                    }
+                    store.draft = updated
+                }
                 Button("添加一件事", systemImage: "plus") { adding = true }
                     .disabled(store.draft.tasks.count >= 8)
             }.disabled(store.isGenerating)
@@ -206,6 +214,9 @@ struct DayTaskEditor: View {
                             }))
                         }
                     }
+                }
+                if !(task.prerequisiteIDs ?? []).isEmpty {
+                    Button("清除这件事的所有先后关系") { task.prerequisiteIDs = nil }
                 }
             }
             .navigationTitle("安排一件事")
