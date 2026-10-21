@@ -6,11 +6,15 @@ on:
     paths:
       - 'Sources/**'
       - 'project.yml'
+      - 'scripts/**'
+      - 'source-integrity.json'
       - '.github/workflows/ios-build.yml'
   pull_request:
     paths:
       - 'Sources/**'
       - 'project.yml'
+      - 'scripts/**'
+      - 'source-integrity.json'
       - '.github/workflows/ios-build.yml'
 
 permissions:
@@ -22,6 +26,8 @@ jobs:
     timeout-minutes: 25
     steps:
       - uses: actions/checkout@v4
+      - name: Verify UTF-8 source and checksums
+        run: python3 scripts/source_integrity.py
       - name: Install project generator
         run: brew install xcodegen
       - name: Generate Xcode project
@@ -46,6 +52,8 @@ jobs:
           ditto build/Cassie-unsigned.xcarchive/Products/Applications/Cassie.app build/unsigned/Payload/Cassie.app
           cd build/unsigned
           zip -qry ../Cassie-unsigned.ipa Payload
+      - name: Check Chinese text in compiled app
+        run: python3 scripts/verify_app_text.py build/Cassie-unsigned.xcarchive/Products/Applications/Cassie.app
       - name: Upload build output
         if: always()
         uses: actions/upload-artifact@v4

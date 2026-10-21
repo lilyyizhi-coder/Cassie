@@ -1,0 +1,14 @@
+{
+  "Sources/CalendarService.swift": "b310ebb9071b0cb38c25c5ca2287685267e1cb0fb3c1d4720013055b2c9756ce",
+  "Sources/CassieApp.swift": "64e1d923e4d44c26e77e0dbbf715a7bc5dc64fbce440291984bd2d54e67f5f91",
+  "Sources/CassieHomeView.swift": "6631f950a30c4fc0fc92afe98046f27a89c5553ca400f001116c71e3dc9e9f2e",
+  "Sources/FeatureViews.swift": "e22f06e7dd1fbbb86acb83310ba3953bc0b85a2d5f7733d81f1c3adbef7e4dcd",
+  "Sources/LocalStore.swift": "be0d2a04c9d48c5c1b2335576187c0f57787d89d8aead58ece3058d6a95b1208",
+  "Sources/PhotoIndex.swift": "4b15f0c8e562e4492dc32c3d7d73ee2b2b3c4a7a5c02cc65c5e29640036e29d2",
+  "Sources/ShortcutService.swift": "7fbb39711eda8c2d9c9c1cf6c7a710c96d0e372739147ae280ff47b39ea9f573",
+  "Sources/SpeechService.swift": "a50fe22278409756344156f6282c51b6debfb2a9e087ac9ceb10fdc45eac8d43",
+  "scripts/source_integrity.py": "026fab2252fb698923a0abf28544b8f697b0dc5f6de0858fc6c62726bb2b6ca9",
+  "scripts/verify_app_text.py": "f1ab46fcb43566801812ae503d30bbb9660b5582bf09c1b8614e52eb2bac0e70",
+  "project.yml": "4097a18cd599c02f9cfa89d0ebc745f8bec4547e8bd02ad93b7d2c3300798046",
+  ".github/workflows/ios-build.yml": "d990a0628ec877204216642cc09fcee624e828ccb76410b0cfccfd4ddef064e4"
+}

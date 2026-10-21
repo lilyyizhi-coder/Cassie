@@ -46,7 +46,7 @@ final class NoteStore: ObservableObject {
     init() {
         do { notes = try LocalStore.load([VoiceNote].self, from: "notes.json") }
         catch let problem as CocoaError where problem.code == .fileReadNoSuchFile { }
-        catch { self.error = "����¼��ʱ�޷���ȡ��\(error.localizedDescription)" }
+        catch { self.error = "备忘录暂时无法读取：\(error.localizedDescription)" }
     }
 
     @discardableResult
@@ -60,7 +60,7 @@ final class NoteStore: ObservableObject {
             error = nil
             return true
         } catch {
-            self.error = "δ���棺\(error.localizedDescription)"
+            self.error = "未保存：\(error.localizedDescription)"
             return false
         }
     }

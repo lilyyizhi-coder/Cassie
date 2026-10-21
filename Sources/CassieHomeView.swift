@@ -25,13 +25,13 @@ struct CassieHomeView: View {
                     HStack {
                         VStack(alignment: .leading, spacing: 4) {
                             Text("Cassie").font(.largeTitle.bold())
-                            Text("���ճ�С�½�����").foregroundStyle(.secondary)
+                            Text("把日常小事交给我").foregroundStyle(.secondary)
                         }
                         Spacer()
                         Button { readReplies.toggle(); if !readReplies { speech.silence() } } label: {
                             Image(systemName: readReplies ? "speaker.wave.2" : "speaker.slash")
                                 .font(.title2).padding(12)
-                        }.accessibilityLabel(readReplies ? "�ر���������" : "������������")
+                        }.accessibilityLabel(readReplies ? "关闭语音播报" : "开启语音播报")
                     }
                     voiceCard
                     if let error = speech.error { Text(error).font(.footnote).foregroundStyle(.red) }
@@ -39,27 +39,27 @@ struct CassieHomeView: View {
                         VStack(alignment: .leading, spacing: 12) {
                             Text(reply).textSelection(.enabled)
                             if matchCount > 0 {
-                                Button("�鿴 \(matchCount) ��ƥ����ԭͼ") { path.append(.photos(lastSearch)) }
+                                Button("查看 \(matchCount) 个匹配与原图") { path.append(.photos(lastSearch)) }
                             }
                         }.frame(maxWidth: .infinity, alignment: .leading).padding(18)
                             .background(.background, in: RoundedRectangle(cornerRadius: 20))
                     }
-                    Text("���ù���").font(.title3.bold())
+                    Text("常用功能").font(.title3.bold())
                     LazyVGrid(columns: [GridItem(.flexible()), GridItem(.flexible())], spacing: 12) {
-                        feature("��ͼ����", "�������֣��鿴ԭͼ", "text.viewfinder", .photos(""))
-                        feature("�α��ճ�", "���� Celechron �α�", "calendar", .schedule)
-                        feature("��������", "��ڼ��£������ڱ���", "note.text", .notes)
-                        feature("��Ϣ�ݸ�", "�༭������ϵͳ����", "message", .messages)
-                        feature("�򿪶���", "���ÿ��ָ��", "square.grid.2x2", .connections)
-                        feature("̨������", "���ӹٷ��س�ָ��", "bicycle", .connections)
+                        feature("截图资料", "搜索文字，查看原图", "text.viewfinder", .photos(""))
+                        feature("课表日程", "连接 Celechron 课表", "calendar", .schedule)
+                        feature("语音备忘", "随口记下，保存在本机", "note.text", .notes)
+                        feature("消息草稿", "编辑并交给系统发送", "message", .messages)
+                        feature("打开豆包", "配置快捷指令", "square.grid.2x2", .connections)
+                        feature("台铃智能", "连接官方控车指令", "bicycle", .connections)
                     }
                     VStack(alignment: .leading, spacing: 8) {
-                        Text("��������˵").font(.headline)
-                        Text("����һ�ڿ���ʲô��\n����һ�º��������ڵĽ�ͼ��\n����һ��������������\n���򿪶�����")
+                        Text("试着这样说").font(.headline)
+                        Text("“下一节课是什么”\n“找一下含考试日期的截图”\n“记一下明天带充电器”\n“打开豆包”")
                             .font(.subheadline).foregroundStyle(.secondary)
                     }.frame(maxWidth: .infinity, alignment: .leading).padding(18)
                         .background(.background, in: RoundedRectangle(cornerRadius: 20))
-                    Text("����Ԥ���� �� ��ǰ֧�ֱ���ָ�����ͼ�������������������롢ѧϰ���������ɶಽ�Ի����ڽ��롣")
+                    Text("开发预览版 · 当前支持本机指令与截图文字搜索。天气、翻译、学习整理和自由多步对话正在接入。")
                         .font(.caption).foregroundStyle(.secondary)
                 }.padding(20)
             }
@@ -91,10 +91,10 @@ struct CassieHomeView: View {
             if value { startFromShortcutIfNeeded() }
         }
         .task { startFromShortcutIfNeeded() }
-        .alert("���г�������ָ�", isPresented: $confirmUnlock) {
-            Button("ȡ��", role: .cancel) { }
-            Button("ȷ������") { Task { await runShortcut(tailgShortcut, vehicle: true) } }
-        } message: { Text("�����������õġ�\(tailgShortcut)�����ָ���ȷ������Ӧ��Ҫ�����ĳ�����") }
+        .alert("运行车辆解锁指令？", isPresented: $confirmUnlock) {
+            Button("取消", role: .cancel) { }
+            Button("确认运行") { Task { await runShortcut(tailgShortcut, vehicle: true) } }
+        } message: { Text("将运行你配置的“\(tailgShortcut)”快捷指令。请确认它对应你要解锁的车辆。") }
     }
 
     private var voiceCard: some View {
@@ -110,16 +110,16 @@ struct CassieHomeView: View {
                                                endPoint: .bottomTrailing), in: Circle())
             }
             .disabled(speech.isStarting)
-            .accessibilityLabel(speech.isListening ? "����¼�����ύ" : "��ʼ��������")
-            Text(speech.isListening ? "���������㰴�������ύ" : speech.isStarting ? "����׼��������" : "���¿�ʼ˵��")
+            .accessibilityLabel(speech.isListening ? "结束录音并提交" : "开始语音请求")
+            Text(speech.isListening ? "正在听，点按结束并提交" : speech.isStarting ? "正在准备语音…" : "按下开始说话")
                 .font(.headline)
             if speech.isListening { Text(speech.transcript).frame(maxWidth: .infinity, alignment: .leading) }
             HStack(alignment: .bottom) {
-                TextField("Ҳ��������������", text: $input, axis: .vertical)
+                TextField("也可以在这里输入", text: $input, axis: .vertical)
                     .lineLimit(1...5).submitLabel(.send).onSubmit { submit(input) }
                 Button { submit(input) } label: { Image(systemName: "arrow.up.circle.fill").font(.title) }
                     .disabled(input.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty || speech.isListening || speech.isStarting)
-                    .accessibilityLabel("�ύ����")
+                    .accessibilityLabel("提交请求")
             }.padding(12).background(Color(uiColor: .secondarySystemGroupedBackground), in: RoundedRectangle(cornerRadius: 12))
         }.padding(22).frame(maxWidth: .infinity)
             .background(.background, in: RoundedRectangle(cornerRadius: 24))
@@ -138,51 +138,51 @@ struct CassieHomeView: View {
 
     private func submit(_ raw: String) {
         guard !speech.isListening, !speech.isStarting else { return }
-        let text = raw.replacingOccurrences(of: #"^\s*[Cc]assie[��,��:\s]*"#, with: "", options: .regularExpression)
+        let text = raw.replacingOccurrences(of: #"^\s*[Cc]assie[，,：:\s]*"#, with: "", options: .regularExpression)
             .trimmingCharacters(in: .whitespacesAndNewlines)
         guard !text.isEmpty else { return }
         input = text
         matchCount = 0
-        if ["��ͼ", "��Ƭ", "���", "��ͼ"].contains(where: text.contains) {
+        if ["截图", "照片", "相册", "找图"].contains(where: text.contains) {
             guard photos.canRead else {
-                answer("�����ڽ�ͼ����ҳ��Ȩ�����ʣ���ɨ��ͼƬ��������������")
+                answer("请先在截图资料页授权相册访问，再扫描图片建立文字索引。")
                 path.append(.photos(text)); return
             }
             let matches = PhotoSearch.matches(text, in: photos.records)
             lastSearch = text
             matchCount = matches.count
             if let best = matches.first {
-                answer("�ҵ���ؽ�ͼ��\(best.photo.createdAt?.formatted(date: .abbreviated, time: .omitted) ?? "����δ֪")�Ľ�ͼ��д�ţ�\(best.excerpt)������Դ�ԭͼ�˶ԡ�")
+                answer("找到相关截图。\(best.photo.createdAt?.formatted(date: .abbreviated, time: .omitted) ?? "日期未知")的截图中写着：\(best.excerpt)。你可以打开原图核对。")
             } else {
-                answer("��������ͼƬ��û���ҵ�����ƥ�䡣����ɨ����ᣬ����ý�ͼ�ϳ��ֹ��Ĵ��")
+                answer("已索引的图片里没有找到文字匹配。请先扫描相册，或改用截图上出现过的词语。")
                 path.append(.photos(text))
             }
-        } else if ["�½�", "��һ��", "�α�", "ʲô��"].contains(where: text.contains) {
+        } else if ["下节", "下一节", "课表", "什么课"].contains(where: text.contains) {
             answer(schedule.nextClassAnswer())
-        } else if text.contains("�򿪶���") {
+        } else if text.contains("打开豆包") {
             guard !doubaoShortcut.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty else {
-                answer("�������ô򿪶����Ŀ��ָ�����ơ�")
+                answer("请先配置打开豆包的快捷指令名称。")
                 path.append(.connections); return
             }
             Task { await runShortcut(doubaoShortcut, vehicle: false) }
-        } else if text.contains("����"), text.contains("��") || text.contains("̨��") {
+        } else if text.contains("解锁"), text.contains("车") || text.contains("台铃") {
             guard !tailgShortcut.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty else {
-                answer("��������̨�������ṩ�ĳ����������ָ�")
+                answer("请先连接台铃智能提供的车辆解锁快捷指令。")
                 path.append(.connections); return
             }
             speech.silence(); confirmUnlock = true
-        } else if text.hasPrefix("��һ��") || text.hasPrefix("��ס") || text.hasPrefix("���Ҽ�") {
-            let note = text.replacingOccurrences(of: #"^(��һ��|��ס|���Ҽ���|���Ҽ�)[��,��:\s]*"#, with: "", options: .regularExpression)
-            if notes.add(note) { answer("�Ѽ��ڱ��������\(note)") }
-            else { answer(notes.error ?? "�������Ҫ��ס�ľ������ݡ�") }
-        } else if text.contains("����") || text.contains("�Ҽ���ʲô") || text.contains("����˵") {
-            let found = text.contains("����") ? notes.notes.filter { Calendar.current.isDateInYesterday($0.createdAt) } : notes.notes
-            answer(found.isEmpty ? "û���ҵ���Ӧ�ı�����" : found.prefix(5).map(\.text).joined(separator: "��"))
-        } else if text.contains("�ظ�") || text.contains("��Ϣ") {
-            answer("��������Ϣ�ݸ�ҳ�༭�ظ���������ϵͳ��Ϣ����ȷ�Ϸ��͡�")
+        } else if text.hasPrefix("记一下") || text.hasPrefix("记住") || text.hasPrefix("帮我记") {
+            let note = text.replacingOccurrences(of: #"^(记一下|记住|帮我记下|帮我记)[，,：:\s]*"#, with: "", options: .regularExpression)
+            if notes.add(note) { answer("已记在本机备忘里：\(note)") }
+            else { answer(notes.error ?? "请告诉我要记住的具体内容。") }
+        } else if text.contains("备忘") || text.contains("我记了什么") || text.contains("昨天说") {
+            let found = text.contains("昨天") ? notes.notes.filter { Calendar.current.isDateInYesterday($0.createdAt) } : notes.notes
+            answer(found.isEmpty ? "没有找到对应的备忘。" : found.prefix(5).map(\.text).joined(separator: "；"))
+        } else if text.contains("回复") || text.contains("消息") {
+            answer("可以在消息草稿页编辑回复，并交给系统消息界面确认发送。")
             path.append(.messages)
         } else {
-            answer("��һ����Բ�ѯ�α���������ͼ���֡��Ǳ������򿪶��������������õ�̨��ָ����ɶԻ����������ܻ��ڿ����С�")
+            answer("这一版可以查询课表、搜索截图文字、记备忘、打开豆包和启动已配置的台铃指令。自由对话与其他功能还在开发中。")
         }
     }
 
@@ -194,8 +194,8 @@ struct CassieHomeView: View {
     private func runShortcut(_ name: String, vehicle: Bool) async {
         let opened = await ShortcutService.run(name: name)
         reply = opened
-            ? (vehicle ? "����������̨��ָ��Ƿ�����ɹ�������̨�����ܺͳ�������Ϊ׼��" : "���������д򿪶���ָ���鿴���ָ���ִ�н����")
-            : "δ�ܴ򿪿��ָ�����������ϵͳ App��"
+            ? (vehicle ? "已请求运行台铃指令；是否解锁成功，请以台铃智能和车辆反馈为准。" : "已请求运行打开豆包指令，请查看快捷指令的执行结果。")
+            : "未能打开快捷指令，请检查配置与系统 App。"
     }
 
     private func beginVoice() async {

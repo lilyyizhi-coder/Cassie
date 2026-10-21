@@ -6,11 +6,13 @@ options:
 settings:
   base:
     SWIFT_VERSION: "5.0"
+    CURRENT_PROJECT_VERSION: "2"
+    MARKETING_VERSION: "0.1.1"
     INFOPLIST_KEY_CFBundleDisplayName: Cassie
-    INFOPLIST_KEY_NSPhotoLibraryUsageDescription: Cassie ��ȡ����Ȩ����Ƭ���ͼ���ڱ���ʶ�����֣�������������ϡ�
-    INFOPLIST_KEY_NSMicrophoneUsageDescription: �㷢����������ʱ��Cassie ʹ����˷���ȡָ�
-    INFOPLIST_KEY_NSSpeechRecognitionUsageDescription: Cassie ���������ָ��תΪ���֡����汾��������ʶ�����ʱ¼����
-    INFOPLIST_KEY_NSCalendarsFullAccessUsageDescription: Cassie ��ȡ��ѡ�еĿα��������ش�γ����ơ��ص�Ϳ�ʼʱ�䡣
+    INFOPLIST_KEY_NSPhotoLibraryUsageDescription: Cassie 读取你授权的照片与截图，在本机识别文字，帮助你查找资料。
+    INFOPLIST_KEY_NSMicrophoneUsageDescription: 你发起语音请求时，Cassie 使用麦克风听取指令。
+    INFOPLIST_KEY_NSSpeechRecognitionUsageDescription: Cassie 将你的语音指令转为文字。本版本仅在离线识别可用时录音。
+    INFOPLIST_KEY_NSCalendarsFullAccessUsageDescription: Cassie 读取你选中的课表日历，回答课程名称、地点和开始时间。
     INFOPLIST_KEY_CFBundleDevelopmentRegion: zh_CN
     INFOPLIST_KEY_PHPhotoLibraryPreventAutomaticLimitedAccessAlert: YES
     GENERATE_INFOPLIST_FILE: YES

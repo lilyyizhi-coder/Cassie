@@ -9,8 +9,8 @@ final class AppRoute: ObservableObject {
 }
 
 struct TalkToCassieIntent: AppIntent {
-    static var title: LocalizedStringResource = "�� Cassie ˵��"
-    static var description = IntentDescription("�� Cassie ����ʼһ����������")
+    static var title: LocalizedStringResource = "和 Cassie 说话"
+    static var description = IntentDescription("打开 Cassie 并开始一次语音请求。")
     static var openAppWhenRun = true
 
     func perform() async throws -> some IntentResult {
@@ -22,8 +22,8 @@ struct TalkToCassieIntent: AppIntent {
 struct CassieShortcuts: AppShortcutsProvider {
     static var appShortcuts: [AppShortcut] {
         AppShortcut(intent: TalkToCassieIntent(),
-                    phrases: ["�� \(.applicationName) ˵��", "�� \(.applicationName)"],
-                    shortTitle: "�� Cassie ˵��", systemImageName: "waveform")
+                    phrases: ["和 \(.applicationName) 说话", "打开 \(.applicationName)"],
+                    shortTitle: "和 Cassie 说话", systemImageName: "waveform")
     }
 }
 

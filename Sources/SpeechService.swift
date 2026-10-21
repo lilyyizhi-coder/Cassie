@@ -37,18 +37,18 @@ final class SpeechService: NSObject, ObservableObject, AVSpeechSynthesizerDelega
         }
         guard sessionID == startingID else { return }
         guard speechStatus == .authorized else {
-            error = "����ϵͳ���������� Cassie ʹ������ʶ��"
+            error = "请在系统设置中允许 Cassie 使用语音识别。"
             return
         }
         let microphoneAllowed = await AVAudioApplication.requestRecordPermission()
         guard sessionID == startingID else { return }
         guard microphoneAllowed else {
-            error = "����ϵͳ���������� Cassie ʹ����˷硣"
+            error = "请在系统设置中允许 Cassie 使用麦克风。"
             return
         }
         // Keep this first version local: do not silently fall back to cloud ASR.
         guard let recognizer, recognizer.isAvailable, recognizer.supportsOnDeviceRecognition else {
-            error = "��ǰ������������ʶ�𲻿��á���ʹ���������룬���Ժ���ϵͳ������Դ��"
+            error = "当前中文离线语音识别不可用。请使用文字输入，或稍后检查系统语言资源。"
             return
         }
 
@@ -70,7 +70,7 @@ final class SpeechService: NSObject, ObservableObject, AVSpeechSynthesizerDelega
             let bufferRequest = SFSpeechAudioBufferRecognitionRequest()
             bufferRequest.requiresOnDeviceRecognition = true
             bufferRequest.shouldReportPartialResults = true
-            bufferRequest.contextualStrings = ["Cassie", "����", "̨��", "�α�", "Celechron"]
+            bufferRequest.contextualStrings = ["Cassie", "豆包", "台铃", "课表", "Celechron"]
             request = bufferRequest
             input.installTap(onBus: 0, bufferSize: 1024, format: format) { buffer, _ in
                 bufferRequest.append(buffer)
@@ -83,7 +83,7 @@ final class SpeechService: NSObject, ObservableObject, AVSpeechSynthesizerDelega
                     if result?.isFinal == true {
                         self.stop(submit: true)
                     } else if let problem {
-                        self.error = "����ʶ���жϣ�\(problem.localizedDescription)"
+                        self.error = "语音识别中断：\(problem.localizedDescription)"
                         self.stop(submit: false)
                     }
                 }
@@ -97,7 +97,7 @@ final class SpeechService: NSObject, ObservableObject, AVSpeechSynthesizerDelega
                 self?.stop(submit: true)
             }
         } catch {
-            self.error = "�޷���ʼ¼����\(error.localizedDescription)"
+            self.error = "无法开始录音：\(error.localizedDescription)"
             stop(submit: false)
         }
     }
@@ -133,7 +133,7 @@ final class SpeechService: NSObject, ObservableObject, AVSpeechSynthesizerDelega
             let utterance = AVSpeechUtterance(string: text)
             utterance.voice = AVSpeechSynthesisVoice(language: "zh-CN")
             synthesizer.speak(utterance)
-        } catch { self.error = "�޷�������\(error.localizedDescription)" }
+        } catch { self.error = "无法播报：\(error.localizedDescription)" }
     }
 
     func silence() {
@@ -150,6 +150,6 @@ final class SpeechService: NSObject, ObservableObject, AVSpeechSynthesizerDelega
 
     private enum VoiceError: LocalizedError {
         case noInput
-        var errorDescription: String? { "û�п��õ���˷����롣" }
+        var errorDescription: String? { "没有可用的麦克风输入。" }
     }
 }

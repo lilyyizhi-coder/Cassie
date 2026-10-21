@@ -26,7 +26,7 @@ final class CalendarService: ObservableObject {
     func connect() async {
         do {
             guard try await store.requestFullAccessToEvents() else {
-                error = "����ϵͳ�����������������ʣ����ܲ�ѯͬ����Ŀα���"
+                error = "请在系统设置中允许日历访问，才能查询同步后的课表。"
                 return
             }
             refresh()
@@ -64,7 +64,7 @@ final class CalendarService: ObservableObject {
             .sorted { $0.startDate < $1.startDate }
             .map { event in
                 ScheduleItem(id: "\(event.eventIdentifier ?? UUID().uuidString)-\(event.startDate.timeIntervalSince1970)",
-                             title: event.title ?? "δ�����γ�", location: event.location ?? "δ��д�ص�",
+                             title: event.title ?? "未命名课程", location: event.location ?? "未填写地点",
                              start: event.startDate, end: event.endDate)
             }
         error = nil
@@ -72,18 +72,18 @@ final class CalendarService: ObservableObject {
 
     func nextClassAnswer(now: Date = Date()) -> String {
         refresh()
-        guard hasAccess else { return "�����ڿα�ҳ��Ȩ�������ʣ���ѡ�� Celechron ͬ���Ŀα�������" }
-        guard !selectedIDs.isEmpty else { return "��ѡ�� Celechron ͬ����ϵͳ�������Ǹ��α�������" }
+        guard hasAccess else { return "请先在课表页授权日历访问，并选择 Celechron 同步的课表日历。" }
+        guard !selectedIDs.isEmpty else { return "请选择 Celechron 同步到系统日历的那个课表日历。" }
         if let current = events.first(where: { $0.start <= now && $0.end > now }) {
             let minutes = max(1, Int(ceil(current.end.timeIntervalSince(now) / 60)))
             let next = events.first(where: { $0.start > now })
-            let suffix = next.map { "��һ����\($0.title)��\($0.start.formatted(date: .abbreviated, time: .shortened))��ʼ���ص�\($0.location)��" } ?? "δ�����ܵ���ѡ������û���ҵ���һ�ڿΡ�"
-            return "��ǰ��\(current.title)��Լ\(minutes)���Ӻ������" + suffix
+            let suffix = next.map { "下一节是\($0.title)，\($0.start.formatted(date: .abbreviated, time: .shortened))开始，地点\($0.location)。" } ?? "未来两周的所选日历里没有找到下一节课。"
+            return "当前是\(current.title)，约\(minutes)分钟后结束。" + suffix
         }
         guard let next = events.first(where: { $0.start > now }) else {
-            return "δ�����ܵ���ѡ������û���ҵ��γ̣���ȷ�� Celechron ��ͬ����ѧ�ڿα���"
+            return "未来两周的所选日历里没有找到课程，请确认 Celechron 已同步本学期课表。"
         }
         let minutes = max(1, Int(ceil(next.start.timeIntervalSince(now) / 60)))
-        return "��һ����\(next.title)��\(next.start.formatted(date: .abbreviated, time: .shortened))��ʼ������Լ\(minutes)���ӣ��ص�\(next.location)��"
+        return "下一节是\(next.title)，\(next.start.formatted(date: .abbreviated, time: .shortened))开始，还有约\(minutes)分钟，地点\(next.location)。"
     }
 }

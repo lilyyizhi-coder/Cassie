@@ -25,7 +25,7 @@ enum PhotoSearch {
         guard !cleaned.isEmpty else { return [] }
         let tokenizer = NLTokenizer(unit: .word)
         tokenizer.string = cleaned
-        let stopWords: Set<String> = ["��", "��", "����", "��", "һ��", "��һ��", "����", "��", "��", "��", "����", "��Ƭ", "��ͼ", "���", "��Ϣ", "��", "һ��", "����"]
+        let stopWords: Set<String> = ["帮", "我", "帮我", "找", "一下", "找一下", "找找", "的", "了", "里", "里面", "照片", "截图", "相关", "信息", "请", "一张", "那张"]
         var terms: Set<String> = []
         tokenizer.enumerateTokens(in: cleaned.startIndex..<cleaned.endIndex) { range, _ in
             let term = String(cleaned[range])
@@ -57,7 +57,7 @@ enum PhotoSearch {
 final class PhotoIndex: ObservableObject {
     @Published private(set) var records: [IndexedPhoto] = []
     @Published private(set) var isScanning = false
-    @Published private(set) var progress = "��δɨ��"
+    @Published private(set) var progress = "尚未扫描"
     @Published private(set) var authorization = PHPhotoLibrary.authorizationStatus(for: .readWrite)
     @Published var error: String?
     private var scanTask: Task<Void, Never>?
@@ -66,7 +66,7 @@ final class PhotoIndex: ObservableObject {
     init() {
         do { records = try LocalStore.load([IndexedPhoto].self, from: fileName) }
         catch let problem as CocoaError where problem.code == .fileReadNoSuchFile { }
-        catch { self.error = "������ʱ�޷���ȡ��\(error.localizedDescription)" }
+        catch { self.error = "索引暂时无法读取：\(error.localizedDescription)" }
         refreshAuthorization()
     }
 
@@ -75,7 +75,7 @@ final class PhotoIndex: ObservableObject {
     func requestAccess() async {
         _ = await PHPhotoLibrary.requestAuthorization(for: .readWrite)
         refreshAuthorization()
-        if !canRead { error = "δ������Ȩ�ޡ�����ϵͳ�������������ʣ���ѡ��Ҫ���ҵ���Ƭ��" }
+        if !canRead { error = "未获得相册权限。请在系统设置中允许访问，或选择要查找的照片。" }
     }
 
     // Revalidate cached OCR when the app becomes active. Removed assets and
@@ -86,7 +86,7 @@ final class PhotoIndex: ObservableObject {
             scanTask?.cancel()
             records = []
             do { try LocalStore.remove(fileName) }
-            catch { self.error = "����������ʧ�ܣ�\(error.localizedDescription)" }
+            catch { self.error = "清理旧索引失败：\(error.localizedDescription)" }
             return
         }
         let accessible = PHAsset.fetchAssets(with: .image, options: nil)
@@ -103,7 +103,7 @@ final class PhotoIndex: ObservableObject {
     func start(screenshotsOnly: Bool, allowCloudDownloads: Bool) {
         guard !isScanning else { return }
         refreshAuthorization()
-        guard canRead else { error = "������Ȩ�����ʡ�"; return }
+        guard canRead else { error = "请先授权相册访问。"; return }
         error = nil
         isScanning = true
         scanTask = Task { [weak self] in
@@ -121,7 +121,7 @@ final class PhotoIndex: ObservableObject {
             do {
                 for (offset, asset) in assets.enumerated() {
                     try Task.checkCancellation()
-                    self.progress = "���ڴ��� \(offset + 1) / \(assets.count)"
+                    self.progress = "正在处理 \(offset + 1) / \(assets.count)"
                     let old = index[asset.localIdentifier]
                     if old != nil, old?.modifiedAt == asset.modificationDate { continue }
                     do {
@@ -144,9 +144,9 @@ final class PhotoIndex: ObservableObject {
                         self.save()
                     }
                 }
-                self.progress = "ɨ����ɣ��� \(assets.count) �ţ����� \(skipped) ��"
+                self.progress = "扫描完成，共 \(assets.count) 张，跳过 \(skipped) 张"
             } catch {
-                self.progress = "ɨ������ͣ���´λ������Ѵ�������Ƭ"
+                self.progress = "扫描已暂停，下次会跳过已处理的照片"
             }
             // Recheck permissions before committing, including cancellation on revoke.
             let status = PHPhotoLibrary.authorizationStatus(for: .readWrite)
@@ -169,13 +169,13 @@ final class PhotoIndex: ObservableObject {
         do {
             try LocalStore.remove(fileName)
             records = []
-            progress = "�������������"
+            progress = "本机索引已清除"
         } catch { self.error = error.localizedDescription }
     }
 
     private func save() {
         do { try LocalStore.save(records, to: fileName) }
-        catch { self.error = "����δ�ܱ��棺\(error.localizedDescription)" }
+        catch { self.error = "索引未能保存：\(error.localizedDescription)" }
     }
 
     private nonisolated static func recognize(_ data: Data) async throws -> String {
@@ -215,6 +215,6 @@ enum PhotoLoader {
 
     enum PhotoError: LocalizedError {
         case unavailable
-        var errorDescription: String? { "�޷���ȡͼƬ�����ܽ����� iCloud�������Ȩ�޷����˱仯��" }
+        var errorDescription: String? { "无法读取图片；可能仅存于 iCloud，或相册权限发生了变化。" }
     }
 }
