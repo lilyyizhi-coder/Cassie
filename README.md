@@ -1,11 +1,17 @@
 # Cassie · iPhone 语音助手开发预览版
 
+## 0.1.1 中文修复版
+
+修复源码经过 Windows 命令行上传时发生的中文编码损坏，并使用显式 Info.plist 打包全部权限说明。当前构建已通过源码 UTF-8/SHA-256 校验、模拟器编译、设备归档、包内中文界面文字及四项权限说明检查。仍需在手机上确认实际显示与功能。
+
+修改源代码、Config、脚本或构建配置后，先运行 `python scripts/source_integrity.py --write` 更新清单；CI 会用清单检查上传后的文件字节是否完整。
+
 面向中文日常场景的原生 SwiftUI App。最低部署版本为 iOS 17。已在 GitHub macOS runner 上通过模拟器编译和 iPhone 真机版本归档，生成待签名 IPA；尚未完成手机上的运行验证。
 
-最新通过构建的源码提交：`2efbef1259348b727a7b608d1019098737dc2a39`。
+最新通过构建的源码提交：`9cf72ba6ba06610fa27b400245d3e503d69a7633`。
 
-- [通过的构建与日志](https://github.com/lilyyizhi-coder/Cassie/actions/runs/39536360015)
-- [下载构建产物](https://github.com/lilyyizhi-coder/Cassie/actions/runs/39536360015/artifacts/12317109887)
+- [通过的构建与日志](https://github.com/lilyyizhi-coder/Cassie/actions/runs/39541122086)
+- [下载构建产物](https://github.com/lilyyizhi-coder/Cassie/actions/runs/39541122086/artifacts/12318997846)
 - [Windows 安装说明](INSTALL-WINDOWS.md)
 
 ## 已接入代码的功能
