@@ -1,12 +1,12 @@
 # 在 Windows 上把 Cassie 装到 iPhone
 
-当前下载链接指向 **0.1.1 中文修复版**。已经安装旧版时，使用同一个 Apple ID 和原有 Bundle ID 设置，在 Sideloadly 中载入新的 IPA 再安装。
+当前下载链接指向 **0.2.0 Dayplan 版**。已经安装旧版时，使用同一个 Apple ID 和原有 Bundle ID 设置，在 Sideloadly 中载入新的 IPA 再安装。
 
 当前是开发预览版。已生成的 IPA 需要先签名，才能安装；免费 Apple ID 可用于个人设备开发安装。
 
 ## 1. 下载待签名安装包
 
-登录 GitHub，打开 [已通过的构建](https://github.com/lilyyizhi-coder/Cassie/actions/runs/39541122086)，在 **Artifacts** 中下载 `Cassie-unsigned-build`。
+登录 GitHub，打开 [已通过的构建](https://github.com/lilyyizhi-coder/Cassie/actions/runs/39544428833)，在 **Artifacts** 中下载 `Cassie-unsigned-build`。
 
 解压下载到的 ZIP，找到 `Cassie-unsigned.ipa`。ZIP 中还包含编译日志。这个产物默认保留七天；过期后在仓库 Actions 中重新运行 **Build Cassie for iOS** 即可生成新的安装包。
 
@@ -21,6 +21,8 @@
 Sideloadly 官方说明免费签名通常有效七天，可以使用自动刷新功能。免费签名与本机语音、App Shortcuts 的组合仍需在你的手机上确认。
 
 ## 3. 首次打开后的配置
+
+**Dayplan**：首页点击 Dayplan，确认日期、起止时间、出发地点、交通方式，逐项添加任务。“同时比较两个目标”会比较少跑路与早点完成两种安排。先后关系在任务编辑页中选择；例如洗护必须在取车之后。当前需填写表单，未接入整段语音自动拆解、动态餐厅推荐或系统提醒。
 
 1. **语音**：点首页录音按钮，允许麦克风和语音识别。当前版本要求中文本地识别可用；若系统资源不可用，请先使用文字输入。
 2. **相册**：打开“截图资料”，授权想让 Cassie 搜索的照片，点击扫描。默认扫描截图，也可改为全部照片。首次扫描保持前台。

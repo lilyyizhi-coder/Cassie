@@ -16,10 +16,10 @@
 
 面向中文日常场景的原生 SwiftUI App。最低部署版本为 iOS 17。已在 GitHub macOS runner 上通过模拟器编译和 iPhone 真机版本归档，生成待签名 IPA；尚未完成手机上的运行验证。
 
-最新通过构建的源码提交：`9cf72ba6ba06610fa27b400245d3e503d69a7633`。
+最新通过构建的源码提交：`295cc12525578639a41bff89eb1a538b4af8f1b5`。
 
-- [通过的构建与日志](https://github.com/lilyyizhi-coder/Cassie/actions/runs/39541122086)
-- [下载构建产物](https://github.com/lilyyizhi-coder/Cassie/actions/runs/39541122086/artifacts/12318997846)
+- [通过的构建与日志](https://github.com/lilyyizhi-coder/Cassie/actions/runs/39544428833)
+- [下载构建产物](https://github.com/lilyyizhi-coder/Cassie/actions/runs/39544428833/artifacts/12321041743)
 - [Windows 安装说明](INSTALL-WINDOWS.md)
 
 ## 已接入代码的功能
