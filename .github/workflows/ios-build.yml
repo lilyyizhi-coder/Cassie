@@ -30,6 +30,10 @@ jobs:
     timeout-minutes: 25
     steps:
       - uses: actions/checkout@v4
+      - name: Select latest stable Xcode (iOS 26 SDK for FoundationModels)
+        uses: maxim-lobanov/setup-xcode@v1
+        with:
+          xcode-version: latest-stable
       - name: Verify UTF-8 source and checksums
         run: python3 scripts/source_integrity.py
       - name: Install project generator
