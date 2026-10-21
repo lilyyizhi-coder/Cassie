@@ -1,6 +1,12 @@
 # Cassie �� iPhone �������ֿ���Ԥ����
 
-���������ճ�������ԭ�� SwiftUI App��Ŀ���豸���û��ṩ�� iPhone 17 Pro / iOS 26.6.2����Ͳ���汾Ϊ iOS 17����ǰ�������� Windows��û�� Xcode �� Swift ����������˱�Ŀ¼�е�ʵ����δͨ�� iOS �����������֤��
+���������ճ�������ԭ�� SwiftUI App����Ͳ���汾Ϊ iOS 17������ GitHub macOS runner ��ͨ��ģ��������� iPhone ����汾�鵵�����ɴ�ǩ�� IPA����δ����ֻ��ϵ�������֤��
+
+����ͨ��������Դ���ύ��`2efbef1259348b727a7b608d1019098737dc2a39`��
+
+- [ͨ���Ĺ�������־](https://github.com/lilyyizhi-coder/Cassie/actions/runs/39536360015)
+- [���ع�������](https://github.com/lilyyizhi-coder/Cassie/actions/runs/39536360015/artifacts/12317109887)
+- [Windows ��װ˵��](INSTALL-WINDOWS.md)
 
 ## �ѽ������Ĺ���
 
@@ -19,7 +25,7 @@
 
 ## û�� Mac �Ĺ�����ʽ
 
-��Ŀ�Դ� `.github/workflows/ios-build.yml`������ GitHub �� macOS runner ������ Xcode ��Ŀ������ģ�����汾���鵵�豸�汾����� `Cassie-unsigned.ipa`��������Ŀǰ����д����룬��δ���С�
+��Ŀ�Դ� `.github/workflows/ios-build.yml`������ GitHub �� macOS runner ������ Xcode ��Ŀ������ģ�����汾���鵵�豸�汾����� `Cassie-unsigned.ipa`���������ѳɹ����С��������ﱣ�����죬���ں���������й��������ɡ�
 
 1. �� **��Ŀ¼������**����һ�� GitHub �ֿ��Ŀ¼��`project.yml`��`Sources/` �� `.github/` Ӧ�ڲֿ���㡣
 2. �ڸòֿ�� Actions ҳ������ **Build Cassie for iOS**����ͨ��ҳ�ϴ�������©��ſ�ͷ�� `.github/` Ŀ¼��ͨ�� Git �ύ�ɱ���������⡣
@@ -75,4 +81,4 @@ open Cassie.xcodeproj
 6. ������׼ȷ�ʹ���Ŀ��ָ������̨�壺�û�ȡ��ȷ�ϡ�ϵͳ�ܾ������������ӡ�
 7. ��Ϣ��ȡ��������ʧ�ܺ�ϵͳ�����ѷ��͡��ʹ�״̬������Ϣ App Ϊ׼��
 
-��ǰ���������Դ�ļ�����Դ���ü�飻�ⲻ����� Xcode ���롢Ȩ�޽����������顣
+Դ�ļ���顢�ƶ� Xcode ģ�������롢�豸�鵵�� IPA �����ͨ��������Ȩ�޽�������ʵ�������谲װ���顣����ɹ���������������мƻ����ܡ�
