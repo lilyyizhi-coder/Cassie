@@ -11,7 +11,7 @@
   "Sources/PhotoIndex.swift": "4b15f0c8e562e4492dc32c3d7d73ee2b2b3c4a7a5c02cc65c5e29640036e29d2",
   "Sources/ProductivityCore.swift": "b9a1c8a290d2f3eb122dd0a391db24805ea8906b26e594e0762776d56887c649",
   "Sources/ProductivityViews.swift": "9974597262f62fd5db0b60dd05980b168aab4d7be9f941c4da518461f2df93fa",
-  "Sources/ReminderService.swift": "690cbce0e02cf64512b094097fc725db01475742c5c6a6be4158e45b1341a88d",
+  "Sources/ReminderService.swift": "f5574179b20fb68e94839d1a0d56e621bd58e19abb3c394b95e1b4f2ec4dc693",
   "Sources/ShortcutService.swift": "7fbb39711eda8c2d9c9c1cf6c7a710c96d0e372739147ae280ff47b39ea9f573",
   "Sources/SpeechService.swift": "a50fe22278409756344156f6282c51b6debfb2a9e087ac9ceb10fdc45eac8d43",
   "scripts/source_integrity.py": "72e52d6a9285bfe100bd1a8ca5931cf730826838200ed82de9b9ca16f1ed0949",
