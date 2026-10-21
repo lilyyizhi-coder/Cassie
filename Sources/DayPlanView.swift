@@ -130,6 +130,7 @@ struct DayPlanView: View {
                     HStack {
                         Button {
                             tracker.toggleCompleted(task.id, day: store.draft.day)
+                            store.publishResult(excluding: tracker.completed(on: store.draft.day))
                         } label: {
                             Image(systemName: tracker.completed(on: store.draft.day).contains(task.id) ? "checkmark.circle.fill" : "circle")
                         }.buttonStyle(.borderless).disabled(store.isGenerating)

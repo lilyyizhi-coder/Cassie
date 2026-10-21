@@ -19,6 +19,7 @@ struct CassieHomeView: View {
     @State private var confirmUnlock = false
     @State private var matchCount = 0
     @State private var lastSearch = ""
+    @State private var thinking = false
 
     var body: some View {
         NavigationStack(path: $path) {
@@ -69,16 +70,17 @@ struct CassieHomeView: View {
                         feature("课表日程", "连接 Celechron 课表", "calendar", .schedule)
                         feature("随口收件箱", "先记住，再整理进计划", "tray", .notes)
                         feature("消息草稿", "编辑并交给系统发送", "message", .messages)
+                        feature("自动提醒", "任务出发、上课出发与睡觉线", "bell.badge", .reminders)
                         feature("打开豆包", "配置快捷指令", "square.grid.2x2", .connections)
                         feature("台铃智能", "连接官方控车指令", "bicycle", .connections)
                     }
                     VStack(alignment: .leading, spacing: 8) {
                         Text("试着这样说").font(.headline)
-                        Text("“下一节课是什么”\n“找一下含考试日期的截图”\n“记一下明天带充电器”\n“打开豆包”")
+                        Text("“下一节课是什么”\n“找一下含考试日期的截图”\n“记一下明天带充电器”\n“我今天要去图书馆做卷子两小时”\n“打开豆包”\n其他任何问题会交给端侧模型（iOS 26 且开启 Apple Intelligence 时）")
                             .font(.subheadline).foregroundStyle(.secondary)
                     }.frame(maxWidth: .infinity, alignment: .leading).padding(18)
                         .background(.background, in: RoundedRectangle(cornerRadius: 20))
-                    Text("开发预览版 · 清单提取和资料查询使用本机规则，保存前请核对。天气、翻译和自由对话仍待接入。")
+                    Text("开发预览版 · 清单提取和资料查询以本机规则为主，端侧 AI 结果也需核对后保存。天气、翻译仍待接入。")
                         .font(.caption).foregroundStyle(.secondary)
                 }.padding(20)
             }
@@ -98,6 +100,7 @@ struct CassieHomeView: View {
                 case .focus: FocusView()
                 case .packing: PackingView()
                 case .replan: ReplanView()
+                case .reminders: ReminderSettingsView()
                 case .personal(let query): PersonalSearchView(query: query)
                 }
             }
@@ -140,11 +143,17 @@ struct CassieHomeView: View {
             Text(speech.isListening ? "正在听，点按结束并提交" : speech.isStarting ? "正在准备语音…" : "按下开始说话")
                 .font(.headline)
             if speech.isListening { Text(speech.transcript).frame(maxWidth: .infinity, alignment: .leading) }
+            if thinking {
+                HStack(spacing: 8) {
+                    ProgressView()
+                    Text("端侧模型思考中，数据不离开手机…").font(.subheadline).foregroundStyle(.secondary)
+                }
+            }
             HStack(alignment: .bottom) {
                 TextField("也可以在这里输入", text: $input, axis: .vertical)
                     .lineLimit(1...5).submitLabel(.send).onSubmit { submit(input) }
                 Button { submit(input) } label: { Image(systemName: "arrow.up.circle.fill").font(.title) }
-                    .disabled(input.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty || speech.isListening || speech.isStarting)
+                    .disabled(input.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty || speech.isListening || speech.isStarting || thinking)
                     .accessibilityLabel("提交请求")
             }.padding(12).background(Color(uiColor: .secondarySystemGroupedBackground), in: RoundedRectangle(cornerRadius: 12))
         }.padding(22).frame(maxWidth: .infinity)
@@ -163,7 +172,7 @@ struct CassieHomeView: View {
     }
 
     private func submit(_ raw: String) {
-        guard !speech.isListening, !speech.isStarting else { return }
+        guard !speech.isListening, !speech.isStarting, !thinking else { return }
         let text = raw.replacingOccurrences(of: #"^\s*[Cc]assie[，,：:\s]*"#, with: "", options: .regularExpression)
             .trimmingCharacters(in: .whitespacesAndNewlines)
         guard !text.isEmpty else { return }
@@ -189,6 +198,9 @@ struct CassieHomeView: View {
         } else if ["带什么", "出门准备", "出门清单"].contains(where: text.contains) {
             answer("打开了出门准备清单，请按实际需要核对。")
             path.append(.packing)
+        } else if ["提醒", "睡觉线", "别睡太晚"].contains(where: text.contains) {
+            answer("可以在自动提醒里开关任务出发、上课出发和睡觉线通知，全部在本机发送。")
+            path.append(.reminders)
         } else if ["我今天要", "今天要做", "今天我要", "帮我安排：", "帮我安排，", "整理成计划"].contains(where: text.contains) {
             answer("先从这段话提取任务草稿，请逐项核对地点、时长和时间限制后加入计划。")
             path.append(.capture(text))
@@ -240,8 +252,60 @@ struct CassieHomeView: View {
             answer("可以在消息草稿页编辑回复，并交给系统消息界面确认发送。")
             path.append(.messages)
         } else {
-            answer("可以说“我今天要…；然后…”，或问“现在做什么”“今天带什么”。也可以查课表、搜截图、记备忘。自由对话仍待接入。")
+            handleOpenQuestion(text)
         }
+    }
+
+    private func handleOpenQuestion(_ text: String) {
+        guard #available(iOS 26.0, *), OnDeviceAssistant.isSupported else {
+            if #available(iOS 26.0, *) {
+                answer("自由对话需要端侧模型，当前不可用：\(OnDeviceAssistant.availabilityText)。也可以说“我今天要…”，或问“现在做什么”“今天带什么”。")
+            } else {
+                answer("可以说“我今天要…；然后…”，或问“现在做什么”“今天带什么”。也可以查课表、搜截图、记备忘。自由对话需要 iOS 26 与 Apple Intelligence。")
+            }
+            return
+        }
+        thinking = true
+        let context = assistantContext()
+        Task { @MainActor in
+            var full = ""
+            do {
+                for try await partial in OnDeviceAssistant.shared.stream(text, context: context) {
+                    full = partial
+                    reply = partial
+                }
+                if full.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
+                    full = "端侧模型没有返回内容，请换一种说法再试。"
+                    reply = full
+                }
+                if readReplies { speech.speak(full) }
+            } catch {
+                answer("端侧模型暂时无法回答（\(error.localizedDescription)）。可以说“我今天要…”，或问“现在做什么”。")
+            }
+            thinking = false
+        }
+    }
+
+    private func assistantContext() -> String {
+        var parts: [String] = []
+        parts.append("现在时间：" + Date().formatted(date: .abbreviated, time: .shortened))
+        if Calendar.current.isDateInToday(planner.draft.day) {
+            if planner.result != nil {
+                parts.append("今天的 Dayplan 方案：\n" + planner.shareText)
+            } else if !planner.draft.tasks.isEmpty {
+                parts.append("今天清单（尚未生成方案）：" + planner.draft.tasks.map { "\($0.title)（\($0.duration)分钟）" }.joined(separator: "、"))
+            }
+            let done = tracker.completed(on: planner.draft.day)
+            if !done.isEmpty {
+                parts.append("已确认完成：" + planner.draft.tasks.filter { done.contains($0.id) }.map(\.title).joined(separator: "、"))
+            }
+        }
+        if let next = schedule.events.first(where: { $0.start > Date() }) {
+            parts.append("下一节课：\(next.title)，\(next.start.formatted(date: .abbreviated, time: .shortened))，地点\(next.location)")
+        }
+        let pendingNotes = notes.notes.filter { $0.processedAt == nil }.prefix(3).map(\.text)
+        if !pendingNotes.isEmpty { parts.append("待整理记录：" + pendingNotes.joined(separator: "；")) }
+        return parts.joined(separator: "\n")
     }
 
     private func answer(_ text: String) {
@@ -269,6 +333,6 @@ struct CassieHomeView: View {
 
     private enum Destination: Hashable {
         case photos(String), schedule, notes, messages, connections, dayplan
-        case capture(String), brief, focus, packing, replan, personal(String)
+        case capture(String), brief, focus, packing, replan, personal(String), reminders
     }
 }

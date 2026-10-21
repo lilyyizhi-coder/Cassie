@@ -10,6 +10,7 @@ final class DayPlanStore: ObservableObject {
             try? LocalStore.remove("dayplan-result.json")
             do { try LocalStore.save(draft, to: "dayplan.json") }
             catch { self.error = "日程未能保存：\(error.localizedDescription)" }
+            publishResult()
         }
     }
     @Published private(set) var result: DayPlanResult?
@@ -122,6 +123,13 @@ final class DayPlanStore: ObservableObject {
         guard let result else { return }
         do { try LocalStore.save(SavedDayPlan(draft: draft, result: result, alternative: alternative), to: "dayplan-result.json") }
         catch { self.error = "方案未能保存：\(error.localizedDescription)" }
+        publishResult()
+    }
+
+    func publishResult(excluding completed: Set<UUID> = []) {
+        var userInfo: [AnyHashable: Any] = ["day": draft.day, "completed": Array(completed)]
+        if let result { userInfo["result"] = result }
+        NotificationCenter.default.post(name: .dayPlanChanged, object: nil, userInfo: userInfo)
     }
 
     func nextStep(completed: Set<UUID>, now: Date = Date()) -> String {

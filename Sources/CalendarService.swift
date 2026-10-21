@@ -53,6 +53,7 @@ final class CalendarService: ObservableObject {
     }
 
     private func loadEvents() {
+        defer { NotificationCenter.default.post(name: .courseEventsChanged, object: nil, userInfo: ["events": events]) }
         guard hasAccess else { events = []; return }
         let chosen = calendars.filter { selectedIDs.contains($0.calendarIdentifier) }
         guard !chosen.isEmpty else { events = []; return }

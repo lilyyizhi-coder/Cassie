@@ -11,6 +11,7 @@ struct PlanCaptureView: View {
     @State private var candidates: [CaptureCandidate] = []
     @State private var editing: DayTask?
     @State private var message: String?
+    @State private var aiWorking = false
 
     var body: some View {
         NavigationStack {
@@ -24,9 +25,10 @@ struct PlanCaptureView: View {
                     if speech.isListening { Text(speech.transcript).foregroundStyle(.secondary) }
                     if let error = speech.error { Text(error).foregroundStyle(.red) }
                     Button("提取待确认草稿") { candidates = PlanCapture.candidates(text, photoID: photoID); message = nil }
-                        .disabled(text.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty || speech.isListening)
+                        .disabled(text.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty || speech.isListening || aiWorking)
+                    aiExtractButton
                 } header: { Text(photoID == nil ? "一句话或每行一件事" : "截图文字转待办") }
-                  footer: { Text("本机规则提取，以换行、句号、分号或“然后”分段。复杂表述可能识别不全，请与原文核对；不会自动解答题目。") }
+                  footer: { Text("本机规则提取，以换行、句号、分号或“然后”分段。复杂表述可改用端侧 AI 提取；两种结果都需逐项核对，不会自动解答题目。") }
                 Section {
                     LabeledContent("加入哪天的计划", value: planner.draft.day.formatted(date: .abbreviated, time: .omitted))
                     Text("如需安排其他日期，请先在 Dayplan 修改日期。这里追加任务，不覆盖已有清单。")
@@ -64,6 +66,33 @@ struct PlanCaptureView: View {
                 }
             }
             .onDisappear { if speech.isListening { speech.stop(submit: false) } }
+        }
+    }
+
+    @ViewBuilder
+    private var aiExtractButton: some View {
+        if #available(iOS 26.0, *) {
+            if OnDeviceAssistant.isSupported {
+                Button(aiWorking ? "端侧 AI 提取中…" : "用端侧 AI 提取（复杂表述）", systemImage: "sparkles") {
+                    aiWorking = true
+                    message = nil
+                    let source = text
+                    Task { @MainActor in
+                        do {
+                            let extracted = try await OnDeviceAssistant.shared.extractTasks(from: source)
+                            candidates = OnDeviceAssistant.shared.candidates(from: extracted, sourceText: source, photoID: photoID)
+                            if candidates.isEmpty { message = "端侧模型没有提取到任务，请修改文字或改用规则提取。" }
+                        } catch {
+                            message = "端侧模型提取失败（\(error.localizedDescription)），可改用规则提取。"
+                        }
+                        aiWorking = false
+                    }
+                }
+                .disabled(text.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty || speech.isListening || aiWorking)
+            } else {
+                Text("端侧 AI 当前不可用：\(OnDeviceAssistant.availabilityText)")
+                    .font(.caption).foregroundStyle(.secondary)
+            }
         }
     }
 
