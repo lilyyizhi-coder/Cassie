@@ -1,12 +1,12 @@
 # 在 Windows 上把 Cassie 装到 iPhone
 
-当前下载链接指向 **0.3.0 学习与手机效率版**。0.4.0（自动提醒三件套）与 0.5.0（端侧 AI）代码已完成但尚未推送构建；新构建通过后这里会更新链接。已经安装旧版时，使用同一个 Apple ID 和原有 Bundle ID 设置，在 Sideloadly 中载入新的 IPA 再安装；任务与记录数据保存在本机，覆盖安装不迁移旧版数据时以 App 内显示为准。
+当前下载链接指向 **0.5.0 版**（含 0.4.0 自动提醒三件套与 0.5.0 端侧 AI，已通过 Actions 构建）。已经安装旧版时，使用同一个 Apple ID 和原有 Bundle ID 设置，在 Sideloadly 中载入新的 IPA 再安装；任务与记录数据保存在本机，覆盖安装不迁移旧版数据时以 App 内显示为准。
 
 当前是开发预览版。已生成的 IPA 需要先签名，才能安装；免费 Apple ID 可用于个人设备开发安装。
 
 ## 1. 下载待签名安装包
 
-登录 GitHub，打开 [已通过的构建](https://github.com/lilyyizhi-coder/Cassie/actions/runs/39545920315)，在 **Artifacts** 中下载 `Cassie-unsigned-build`。
+登录 GitHub，打开 [已通过的构建](https://github.com/lilyyizhi-coder/Cassie/actions/runs/39556941237)，在 **Artifacts** 中下载 `Cassie-unsigned-build`。
 
 解压下载到的 ZIP，找到 `Cassie-unsigned.ipa`。ZIP 中还包含编译日志。这个产物默认保留七天；过期后在仓库 Actions 中重新运行 **Build Cassie for iOS** 即可生成新的安装包。
 

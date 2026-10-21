@@ -1,6 +1,6 @@
 # Cassie · iPhone 语音助手开发预览版
 
-## 0.5.0 端侧 AI（代码已完成，与 0.4.0 一起待推送构建）
+## 0.5.0 端侧 AI（已推送并通过构建）
 
 接入 Apple FoundationModels（iOS 26 + Apple Intelligence，iPhone 15 Pro 及以上）。模型完全跑在手机神经引擎上：**免费、无 API 密钥、无账号、文字不离开设备**，与既有隐私路线一致。
 
@@ -12,7 +12,7 @@
 
 构建改动：GitHub Actions 工作流新增 setup-xcode 步骤选最新稳定 Xcode（iOS 26 SDK）。命令路由仍是本机规则优先，AI 只处理规则不认识的开放问题。
 
-## 0.4.0 自动提醒（代码已完成，待推送构建）
+## 0.4.0 自动提醒（已推送并通过构建）
 
 全部为本机通知（UNUserNotificationCenter），不联网、不上传：
 
@@ -25,7 +25,7 @@
 
 首页新增"自动提醒"入口（也可说"提醒"）：允许通知、逐项开关、查看"接下来会响的提醒"列表。通知权限被拒绝时会提示去系统设置开启。iOS 单 App 最多 64 条待发通知，当前上限约 30 条。
 
-0.4.0 与 0.5.0 改动尚未推送 GitHub；下载链接仍指向 0.3.0 构建。推送并构建通过后更新下方链接。
+0.4.0 与 0.5.0 已推送 GitHub 并通过 Actions 构建（run 39556941237，版本 0.5.0，构建号 6）。下方下载链接已指向该次绿色构建。
 
 ## 0.3.0 学习与手机效率
 
@@ -63,10 +63,10 @@
 
 面向中文日常场景的原生 SwiftUI App。最低部署版本为 iOS 17。已在 GitHub macOS runner 上通过模拟器编译和 iPhone 真机版本归档，生成待签名 IPA；尚未完成手机上的运行验证。
 
-最新通过构建的源码提交：`72626cc7778783888d5674ca8ead7f15080f06af`（0.3.0）。
+最新通过构建的源码提交：`99891bb65bcb485bd5d2781939e59acdfcc0e48f`（0.5.0，构建号 6）。
 
-- [通过的构建与日志](https://github.com/lilyyizhi-coder/Cassie/actions/runs/39545920315)
-- [下载构建产物](https://github.com/lilyyizhi-coder/Cassie/actions/runs/39545920315/artifacts/12321358934)
+- [通过的构建与日志](https://github.com/lilyyizhi-coder/Cassie/actions/runs/39556941237)
+- [下载构建产物](https://github.com/lilyyizhi-coder/Cassie/actions/runs/39556941237/artifacts/12325324023)
 - [Windows 安装说明](INSTALL-WINDOWS.md)
 
 ## 已接入代码的功能
