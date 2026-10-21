@@ -1,0 +1,10 @@
+.DS_Store
+*.xcodeproj/
+build/
+*.xcarchive/
+*.ipa
+*.p12
+*.mobileprovision
+*.xcuserstate
+xcuserdata/
+*.log

@@ -1,0 +1,29 @@
+name: Cassie
+options:
+  bundleIdPrefix: com.cassieassistant
+  deploymentTarget:
+    iOS: "17.0"
+settings:
+  base:
+    SWIFT_VERSION: "5.0"
+    INFOPLIST_KEY_CFBundleDisplayName: Cassie
+    INFOPLIST_KEY_NSPhotoLibraryUsageDescription: Cassie ��ȡ����Ȩ����Ƭ���ͼ���ڱ���ʶ�����֣�������������ϡ�
+    INFOPLIST_KEY_NSMicrophoneUsageDescription: �㷢����������ʱ��Cassie ʹ����˷���ȡָ�
+    INFOPLIST_KEY_NSSpeechRecognitionUsageDescription: Cassie ���������ָ��תΪ���֡����汾��������ʶ�����ʱ¼����
+    INFOPLIST_KEY_NSCalendarsFullAccessUsageDescription: Cassie ��ȡ��ѡ�еĿα��������ش�γ����ơ��ص�Ϳ�ʼʱ�䡣
+    INFOPLIST_KEY_CFBundleDevelopmentRegion: zh_CN
+    INFOPLIST_KEY_PHPhotoLibraryPreventAutomaticLimitedAccessAlert: YES
+    GENERATE_INFOPLIST_FILE: YES
+targets:
+  Cassie:
+    type: application
+    platform: iOS
+    sources:
+      - path: Sources
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.cassieassistant.ios
+        TARGETED_DEVICE_FAMILY: "1"
+        INFOPLIST_KEY_UILaunchScreen_Generation: YES
+        INFOPLIST_KEY_UIApplicationSceneManifest_Generation: YES
+        INFOPLIST_KEY_UISupportedInterfaceOrientations: UIInterfaceOrientationPortrait

@@ -1,0 +1,57 @@
+name: Build Cassie for iOS
+
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - 'Sources/**'
+      - 'project.yml'
+      - '.github/workflows/ios-build.yml'
+  pull_request:
+    paths:
+      - 'Sources/**'
+      - 'project.yml'
+      - '.github/workflows/ios-build.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: macos-15
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install project generator
+        run: brew install xcodegen
+      - name: Generate Xcode project
+        run: xcodegen generate
+      - name: Compile simulator app
+        run: |
+          set -o pipefail
+          xcodebuild -project Cassie.xcodeproj -scheme Cassie \
+            -destination 'generic/platform=iOS Simulator' \
+            -derivedDataPath build/simulator CODE_SIGNING_ALLOWED=NO build \
+            2>&1 | tee simulator-build.log
+      - name: Compile unsigned device archive
+        run: |
+          set -o pipefail
+          xcodebuild -project Cassie.xcodeproj -scheme Cassie \
+            -destination 'generic/platform=iOS' \
+            -archivePath build/Cassie-unsigned.xcarchive \
+            CODE_SIGNING_ALLOWED=NO archive 2>&1 | tee device-build.log
+      - name: Package unsigned IPA for local signing
+        run: |
+          mkdir -p build/unsigned/Payload
+          ditto build/Cassie-unsigned.xcarchive/Products/Applications/Cassie.app build/unsigned/Payload/Cassie.app
+          cd build/unsigned
+          zip -qry ../Cassie-unsigned.ipa Payload
+      - name: Upload build output
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: Cassie-unsigned-build
+          path: |
+            *-build.log
+            build/Cassie-unsigned.ipa
+          retention-days: 7
