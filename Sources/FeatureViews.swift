@@ -251,14 +251,15 @@ struct MessageDraftView: View {
     @State private var result: String?
     var body: some View {
         Form {
-            Section("׼���ظ�") {
+            Section {
                 TextField("�ռ����ֻ��ţ������գ�", text: $recipient).keyboardType(.phonePad)
                 TextField("������ü�����д�ظ�����", text: $text, axis: .vertical).lineLimit(4...10)
                 Button("��鲢��ϵͳ��Ϣ����") { showComposer = true }
                     .disabled(text.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty || !MFMessageComposeViewController.canSendText())
                 if !MFMessageComposeViewController.canSendText() { Text("��ǰ�豸�޷�ʹ��ϵͳ��Ϣ�༭�������Կɷ����ݸ嵽���� App��") }
                 ShareLink("�����ݸ嵽���� App", item: text).disabled(text.isEmpty)
-            } footer: { Text("������ϵͳ��Ϣ������ȷ�ϡ���ҳ�治���ȡ΢�Ż�ϵͳ��Ϣ�������¼��") }
+            } header: { Text("׼���ظ�") }
+              footer: { Text("������ϵͳ��Ϣ������ȷ�ϡ���ҳ�治���ȡ΢�Ż�ϵͳ��Ϣ�������¼��") }
             if let result { Section { Text(result) } }
         }
         .navigationTitle("��Ϣ�ݸ�")

@@ -40,11 +40,7 @@ final class SpeechService: NSObject, ObservableObject, AVSpeechSynthesizerDelega
             error = "����ϵͳ���������� Cassie ʹ������ʶ��"
             return
         }
-        let microphoneAllowed = await withCheckedContinuation { continuation in
-            AVAudioSession.sharedInstance().requestRecordPermission {
-                continuation.resume(returning: $0)
-            }
-        }
+        let microphoneAllowed = await AVAudioApplication.requestRecordPermission()
         guard sessionID == startingID else { return }
         guard microphoneAllowed else {
             error = "����ϵͳ���������� Cassie ʹ����˷硣"
