@@ -94,12 +94,13 @@ private struct PhotoResultRow: View {
 }
 
 @MainActor
-private struct PhotoDetailView: View {
+struct PhotoDetailView: View {
     let photo: IndexedPhoto
     @Environment(\.dismiss) private var dismiss
     @State private var image: UIImage?
     @State private var error: String?
     @State private var loading = true
+    @State private var capture = false
 
     var body: some View {
         NavigationStack {
@@ -110,12 +111,18 @@ private struct PhotoDetailView: View {
                     if let error { Text(error).foregroundStyle(.secondary) }
                     Text(photo.text.isEmpty ? "没有识别出文字。" : photo.text).textSelection(.enabled)
                     if !photo.text.isEmpty { ShareLink("分享识别文字", item: photo.text) }
+                    if !photo.text.isEmpty {
+                        Button("从这张截图提取待办", systemImage: "checklist") { capture = true }
+                        Text("确认保存的任务会保留来源文字副本。清除照片索引不会删除已保存的任务副本；可在 Dayplan 删除对应任务。")
+                            .font(.caption).foregroundStyle(.secondary)
+                    }
                 }.padding()
             }
             .navigationTitle("来源截图")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar { Button("完成") { dismiss() } }
             .task { await load(allowCloud: false) }
+            .sheet(isPresented: $capture) { PlanCaptureView(text: photo.text, photoID: photo.id) }
             .safeAreaInset(edge: .bottom) {
                 if image == nil && !loading {
                     Button("尝试从 iCloud 下载并查看") { Task { await load(allowCloud: true) } }
@@ -188,6 +195,7 @@ struct ScheduleView: View {
 struct NotesView: View {
     @EnvironmentObject private var notes: NoteStore
     @State private var draft = ""
+    @State private var organizing: VoiceNote?
     var body: some View {
         List {
             Section("随手记") {
@@ -201,10 +209,18 @@ struct NotesView: View {
                     VStack(alignment: .leading, spacing: 6) {
                         Text(note.text).textSelection(.enabled)
                         Text(note.createdAt.formatted()).font(.caption).foregroundStyle(.secondary)
+                        Text(note.processedAt == nil ? "待整理" : "已整理").font(.caption).foregroundStyle(.indigo)
+                        HStack {
+                            Button("整理进计划") { organizing = note }
+                            if note.processedAt == nil { Button("仅标记已整理") { notes.markProcessed(note.id) } }
+                        }.buttonStyle(.borderless)
                     }
                 }.onDelete(perform: notes.delete)
             }
-        }.navigationTitle("语音备忘")
+        }.navigationTitle("随口收件箱")
+            .sheet(item: $organizing) { note in
+                PlanCaptureView(text: note.text, onImported: { notes.markProcessed(note.id) })
+            }
     }
 }
 

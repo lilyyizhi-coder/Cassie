@@ -6,6 +6,8 @@ struct CassieHomeView: View {
     @EnvironmentObject private var photos: PhotoIndex
     @EnvironmentObject private var notes: NoteStore
     @EnvironmentObject private var schedule: CalendarService
+    @EnvironmentObject private var planner: DayPlanStore
+    @EnvironmentObject private var tracker: ProductivityStore
     @ObservedObject private var route = AppRoute.shared
     @Environment(\.scenePhase) private var scenePhase
     @AppStorage("doubaoShortcut") private var doubaoShortcut = ""
@@ -34,6 +36,18 @@ struct CassieHomeView: View {
                         }.accessibilityLabel(readReplies ? "关闭语音播报" : "开启语音播报")
                     }
                     voiceCard
+                    NavigationLink(value: Destination.brief) {
+                        VStack(alignment: .leading, spacing: 8) {
+                            Text("今天与下一步").font(.headline)
+                            TimelineView(.periodic(from: Date(), by: 30)) { context in
+                                Text(planner.nextStep(completed: tracker.completed(on: planner.draft.day), now: context.date))
+                                    .font(.subheadline).foregroundStyle(.secondary)
+                            }
+                            Text("\(notes.notes.filter { $0.processedAt == nil }.count)条记录待整理 · 查看每日简报")
+                                .font(.caption).foregroundStyle(.indigo)
+                        }.frame(maxWidth: .infinity, alignment: .leading).padding(18)
+                            .background(.background, in: RoundedRectangle(cornerRadius: 20))
+                    }.buttonStyle(.plain)
                     if let error = speech.error { Text(error).font(.footnote).foregroundStyle(.red) }
                     if !reply.isEmpty {
                         VStack(alignment: .leading, spacing: 12) {
@@ -47,9 +61,13 @@ struct CassieHomeView: View {
                     Text("常用功能").font(.title3.bold())
                     LazyVGrid(columns: [GridItem(.flexible()), GridItem(.flexible())], spacing: 12) {
                         feature("Dayplan", "安排今天的事情与路线", "list.bullet.clipboard", .dayplan)
+                        feature("每日简报", "课表、下一步与截止事项", "sun.max", .brief)
+                        feature("学习计时", "记录实际用时与进度", "timer", .focus)
+                        feature("出门准备", "按计划核对要带的东西", "backpack", .packing)
+                        feature("个人资料问答", "找截图、记录和课表原文", "doc.text.magnifyingglass", .personal(""))
                         feature("截图资料", "搜索文字，查看原图", "text.viewfinder", .photos(""))
                         feature("课表日程", "连接 Celechron 课表", "calendar", .schedule)
-                        feature("语音备忘", "随口记下，保存在本机", "note.text", .notes)
+                        feature("随口收件箱", "先记住，再整理进计划", "tray", .notes)
                         feature("消息草稿", "编辑并交给系统发送", "message", .messages)
                         feature("打开豆包", "配置快捷指令", "square.grid.2x2", .connections)
                         feature("台铃智能", "连接官方控车指令", "bicycle", .connections)
@@ -60,7 +78,7 @@ struct CassieHomeView: View {
                             .font(.subheadline).foregroundStyle(.secondary)
                     }.frame(maxWidth: .infinity, alignment: .leading).padding(18)
                         .background(.background, in: RoundedRectangle(cornerRadius: 20))
-                    Text("开发预览版 · 当前支持本机指令与截图文字搜索。天气、翻译、学习整理和自由多步对话正在接入。")
+                    Text("开发预览版 · 清单提取和资料查询使用本机规则，保存前请核对。天气、翻译和自由对话仍待接入。")
                         .font(.caption).foregroundStyle(.secondary)
                 }.padding(20)
             }
@@ -75,6 +93,12 @@ struct CassieHomeView: View {
                 case .messages: MessageDraftView()
                 case .connections: ConnectionsView()
                 case .dayplan: DayPlanView()
+                case .capture(let text): PlanCaptureView(text: text)
+                case .brief: DailyBriefView()
+                case .focus: FocusView()
+                case .packing: PackingView()
+                case .replan: ReplanView()
+                case .personal(let query): PersonalSearchView(query: query)
                 }
             }
         }
@@ -145,9 +169,35 @@ struct CassieHomeView: View {
         guard !text.isEmpty else { return }
         input = text
         matchCount = 0
-        if ["dayplan", "day plan", "安排今天", "规划今天", "今日计划", "制定日程"].contains(where: text.lowercased().contains) {
-            answer("在 Dayplan 中列出事情、地点和时长，我会按时间限制与通勤估计安排顺序。")
+        if ["晚半小时", "推迟", "没做完", "重排", "重新安排", "计划有变"].contains(where: text.contains) {
+            answer("请确认现在的地点、重新开始时间和还需多久。我会跳过已完成事项，保留其余时间限制后重新规划。")
+            path.append(.replan)
+        } else if ["下一步", "现在该干什么", "现在做什么", "每日简报", "今天概览"].contains(where: text.contains) {
+            answer(planner.nextStep(completed: tracker.completed(on: planner.draft.day)))
+            path.append(.brief)
+        } else if text.contains("暂停计时") || text.contains("继续计时") {
+            guard let active = tracker.data.active else { answer("当前没有正在计时的事项。"); return }
+            let needsChange = text.contains("暂停") ? active.runningSince != nil : active.runningSince == nil
+            if needsChange { tracker.pauseOrResume() }
+            answer(tracker.error ?? (text.contains("暂停") ? "计时已暂停。" : "计时已继续。"))
+        } else if text.contains("结束计时") || text.contains("停止计时") {
+            guard tracker.data.active != nil else { answer("当前没有正在计时的事项。"); return }
+            tracker.finish(); answer(tracker.error ?? "已记录这次用时，任务是否完成请在计划中确认。")
+        } else if text.contains("计时") || text.contains("专注") {
+            answer("选择计划中的事项或填写名称，即可开始计时。")
+            path.append(.focus)
+        } else if ["带什么", "出门准备", "出门清单"].contains(where: text.contains) {
+            answer("打开了出门准备清单，请按实际需要核对。")
+            path.append(.packing)
+        } else if ["我今天要", "今天要做", "今天我要", "帮我安排：", "帮我安排，", "整理成计划"].contains(where: text.contains) {
+            answer("先从这段话提取任务草稿，请逐项核对地点、时长和时间限制后加入计划。")
+            path.append(.capture(text))
+        } else if ["dayplan", "day plan", "安排今天", "规划今天", "今日计划", "制定日程"].contains(where: text.lowercased().contains) {
+            answer("可直接说出清单提取草稿，也可以逐项填写后生成安排。")
             path.append(.dayplan)
+        } else if ["找资料", "查资料", "个人资料", "哪张", "那张", "考试安排在哪"].contains(where: text.contains) {
+            answer("我会检索已索引的照片、随口记录与所选课表原文，点开来源核对。")
+            path.append(.personal(text))
         } else if ["截图", "照片", "相册", "找图"].contains(where: text.contains) {
             guard photos.canRead else {
                 answer("请先在截图资料页授权相册访问，再扫描图片建立文字索引。")
@@ -180,6 +230,9 @@ struct CassieHomeView: View {
             let note = text.replacingOccurrences(of: #"^(记一下|记住|帮我记下|帮我记)[，,：:\s]*"#, with: "", options: .regularExpression)
             if notes.add(note) { answer("已记在本机备忘里：\(note)") }
             else { answer(notes.error ?? "请告诉我要记住的具体内容。") }
+        } else if text.contains("收件箱") || text.contains("整理记录") {
+            answer("打开随口收件箱，可把记录整理进计划。")
+            path.append(.notes)
         } else if text.contains("备忘") || text.contains("我记了什么") || text.contains("昨天说") {
             let found = text.contains("昨天") ? notes.notes.filter { Calendar.current.isDateInYesterday($0.createdAt) } : notes.notes
             answer(found.isEmpty ? "没有找到对应的备忘。" : found.prefix(5).map(\.text).joined(separator: "；"))
@@ -187,7 +240,7 @@ struct CassieHomeView: View {
             answer("可以在消息草稿页编辑回复，并交给系统消息界面确认发送。")
             path.append(.messages)
         } else {
-            answer("这一版可以查询课表、搜索截图文字、记备忘、打开豆包和启动已配置的台铃指令。自由对话与其他功能还在开发中。")
+            answer("可以说“我今天要…；然后…”，或问“现在做什么”“今天带什么”。也可以查课表、搜截图、记备忘。自由对话仍待接入。")
         }
     }
 
@@ -216,5 +269,6 @@ struct CassieHomeView: View {
 
     private enum Destination: Hashable {
         case photos(String), schedule, notes, messages, connections, dayplan
+        case capture(String), brief, focus, packing, replan, personal(String)
     }
 }

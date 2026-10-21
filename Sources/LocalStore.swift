@@ -36,6 +36,7 @@ struct VoiceNote: Codable, Identifiable {
     var id = UUID()
     var text: String
     var createdAt = Date()
+    var processedAt: Date?
 }
 
 @MainActor
@@ -71,5 +72,13 @@ final class NoteStore: ObservableObject {
             try LocalStore.save(updated, to: "notes.json")
             notes = updated
         } catch { self.error = error.localizedDescription }
+    }
+
+    func markProcessed(_ id: UUID) {
+        var updated = notes
+        guard let index = updated.firstIndex(where: { $0.id == id }) else { return }
+        updated[index].processedAt = Date()
+        do { try LocalStore.save(updated, to: "notes.json"); notes = updated }
+        catch { self.error = error.localizedDescription }
     }
 }

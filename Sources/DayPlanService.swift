@@ -7,6 +7,7 @@ final class DayPlanStore: ObservableObject {
         didSet {
             result = nil
             alternative = nil
+            try? LocalStore.remove("dayplan-result.json")
             do { try LocalStore.save(draft, to: "dayplan.json") }
             catch { self.error = "日程未能保存：\(error.localizedDescription)" }
         }
@@ -22,14 +23,25 @@ final class DayPlanStore: ObservableObject {
         do { draft = try LocalStore.load(DayPlanDraft.self, from: "dayplan.json") }
         catch let problem as CocoaError where problem.code == .fileReadNoSuchFile { draft = DayPlanDraft() }
         catch { draft = DayPlanDraft(); self.error = "暂时无法读取上次日程：\(error.localizedDescription)" }
+        if let archive = try? LocalStore.load(SavedDayPlan.self, from: "dayplan-result.json"), archive.draft == draft {
+            result = archive.result
+            alternative = archive.alternative
+        }
     }
 
-    func generate() {
+    func generate(excluding completed: Set<UUID> = []) {
         guard !isGenerating else { return }
         error = nil
         result = nil
         alternative = nil
-        let input = draft
+        let original = draft
+        var input = original
+        input.tasks = original.tasks.filter { !completed.contains($0.id) }.map { item in
+            var remaining = item
+            remaining.prerequisiteIDs = item.prerequisiteIDs?.filter { !completed.contains($0) }
+            return remaining
+        }
+        if input.tasks.isEmpty { error = "清单为空或全部完成，无需重新规划。"; return }
         do { try DayPlanEngine.validate(input) }
         catch { self.error = error.localizedDescription; return }
         isGenerating = true
@@ -87,9 +99,10 @@ final class DayPlanStore: ObservableObject {
                     return (recommended, other)
                 }.value
                 try Task.checkCancellation()
-                guard input == draft else { progress = "清单已变化，请重新生成"; return }
+                guard original == draft else { progress = "清单已变化，请重新生成"; return }
                 result = computed.0
                 alternative = computed.1
+                saveResult()
                 progress = "安排完成"
             } catch is CancellationError { progress = "已取消生成" }
             catch { self.error = error.localizedDescription; progress = "请调整清单" }
@@ -102,6 +115,23 @@ final class DayPlanStore: ObservableObject {
         guard let other = alternative, let current = result else { return }
         result = other
         alternative = current
+        saveResult()
+    }
+
+    private func saveResult() {
+        guard let result else { return }
+        do { try LocalStore.save(SavedDayPlan(draft: draft, result: result, alternative: alternative), to: "dayplan-result.json") }
+        catch { self.error = "方案未能保存：\(error.localizedDescription)" }
+    }
+
+    func nextStep(completed: Set<UUID>, now: Date = Date()) -> String {
+        guard Calendar.current.isDate(draft.day, inSameDayAs: now) else { return "当前计划不是今天，请先切换日期。" }
+        guard let result else { return "还没有可用方案。请先在 Dayplan 确认清单并生成。" }
+        guard let stop = result.stops.first(where: { !completed.contains($0.id) }) else { return "今天计划里的任务都完成了。" }
+        let parts = Calendar.current.dateComponents([.hour, .minute], from: now)
+        let minute = (parts.hour ?? 0) * 60 + (parts.minute ?? 0)
+        let prefix = minute < stop.depart ? "下一步安排" : minute < stop.start ? "接下来去" : minute <= stop.end ? "现在的安排" : "有任务尚未完成，原时间已过"
+        return "\(prefix)：\(stop.task.title)，地点\(stop.task.place?.name ?? "待确认")，计划\(DayPlanEngine.clock(stop.start))至\(DayPlanEngine.clock(stop.end))。\(minute > stop.end ? "请确认进度或重新规划后续。" : "")"
     }
 
     static func mapItem(_ place: DayPlace) -> MKMapItem {
@@ -121,4 +151,10 @@ final class DayPlanStore: ObservableObject {
         lines.append("通勤共约\(result.travelMinutes)分钟；\(result.approximateLegs)段使用距离粗估。实际路况和营业时间请核对。")
         return lines.joined(separator: "\n")
     }
+}
+
+private struct SavedDayPlan: Codable {
+    let draft: DayPlanDraft
+    let result: DayPlanResult
+    var alternative: DayPlanResult?
 }

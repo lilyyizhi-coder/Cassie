@@ -8,6 +8,7 @@ struct CassieApp: App {
     @StateObject private var notes = NoteStore()
     @StateObject private var schedule = CalendarService()
     @StateObject private var dayplan = DayPlanStore()
+    @StateObject private var productivity = ProductivityStore()
 
     var body: some Scene {
         WindowGroup {
@@ -17,6 +18,7 @@ struct CassieApp: App {
                 .environmentObject(notes)
                 .environmentObject(schedule)
                 .environmentObject(dayplan)
+                .environmentObject(productivity)
         }
     }
 }

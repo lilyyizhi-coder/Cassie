@@ -28,6 +28,8 @@ struct DayTask: Codable, Identifiable, Equatable {
     var earliestStart: Int?
     var deadline: Int?
     var prerequisiteIDs: [UUID]?
+    var sourceText: String?
+    var sourcePhotoID: String?
 }
 
 struct DayPlanDraft: Codable, Equatable {
@@ -43,12 +45,12 @@ struct DayPlanDraft: Codable, Equatable {
     var tasks: [DayTask] = []
 }
 
-struct DayLeg: Equatable {
+struct DayLeg: Codable, Equatable {
     var minutes: Int
     var approximate: Bool
 }
 
-struct DayPlanStop: Identifiable, Equatable {
+struct DayPlanStop: Codable, Identifiable, Equatable {
     let task: DayTask
     let depart: Int
     let arrive: Int
@@ -58,7 +60,7 @@ struct DayPlanStop: Identifiable, Equatable {
     var id: UUID { task.id }
 }
 
-struct DayPlanResult: Equatable {
+struct DayPlanResult: Codable, Equatable {
     let stops: [DayPlanStop]
     let finish: Int
     let travelMinutes: Int

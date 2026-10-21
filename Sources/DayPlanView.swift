@@ -4,12 +4,20 @@ import SwiftUI
 @MainActor
 struct DayPlanView: View {
     @EnvironmentObject private var store: DayPlanStore
+    @EnvironmentObject private var tracker: ProductivityStore
     @State private var editing: DayTask?
     @State private var adding = false
     @State private var choosingOrigin = false
+    @State private var capturing = false
 
     var body: some View {
         List {
+            Section("快速开始") {
+                Button("说出或粘贴清单，提取草稿", systemImage: "mic.badge.plus") { capturing = true }
+                NavigationLink("现在做什么与每日简报") { DailyBriefView() }
+                NavigationLink("有变化，重排剩余事项") { ReplanView() }
+                NavigationLink("学习计时") { FocusView() }
+            }
             Section {
                 Text("列出事情与地点，我来安排顺序")
                     .font(.headline)
@@ -61,7 +69,7 @@ struct DayPlanView: View {
                     ProgressView(store.progress)
                     Button("取消生成") { store.cancel() }
                 } else {
-                    Button("制定我的 Dayplan", systemImage: "wand.and.stars") { store.generate() }
+                    Button("制定我的 Dayplan", systemImage: "wand.and.stars") { store.generate(excluding: tracker.completed(on: store.draft.day)) }
                 }
                 if let error = store.error { Text(error).foregroundStyle(.red).textSelection(.enabled) }
             }
@@ -109,8 +117,25 @@ struct DayPlanView: View {
                 }
                 Section { ShareLink("分享或复制我的安排", item: store.shareText) }
             }
+            Section("完成进度 · \(store.draft.day.formatted(date: .abbreviated, time: .omitted))") {
+                ForEach(store.draft.tasks) { task in
+                    HStack {
+                        Button {
+                            tracker.toggleCompleted(task.id, day: store.draft.day)
+                        } label: {
+                            Image(systemName: tracker.completed(on: store.draft.day).contains(task.id) ? "checkmark.circle.fill" : "circle")
+                        }.buttonStyle(.borderless).disabled(store.isGenerating)
+                        Text(task.title)
+                            .strikethrough(tracker.completed(on: store.draft.day).contains(task.id))
+                    }
+                }
+                if let error = tracker.error { Text(error).foregroundStyle(.red) }
+                Text("完成状态由你确认。改动任务时间、地点或名称后，请重新生成方案。")
+                    .font(.caption).foregroundStyle(.secondary)
+            }
         }
         .navigationTitle("Dayplan")
+        .sheet(isPresented: $capturing) { PlanCaptureView(text: "") }
         .sheet(isPresented: $choosingOrigin) {
             DayPlacePicker(regionCenter: store.draft.origin) { store.draft.origin = $0 }
         }
@@ -126,13 +151,16 @@ struct DayPlanView: View {
 }
 
 @MainActor
-private struct DayTaskEditor: View {
+struct DayTaskEditor: View {
+    @EnvironmentObject private var tracker: ProductivityStore
+    @EnvironmentObject private var photos: PhotoIndex
     @Environment(\.dismiss) private var dismiss
     @State var task: DayTask
     let regionCenter: DayPlace?
     let otherTasks: [DayTask]
     let save: (DayTask) -> Void
     @State private var choosePlace = false
+    @State private var sourcePhoto: IndexedPhoto?
     var body: some View {
         NavigationStack {
             Form {
@@ -140,6 +168,15 @@ private struct DayTaskEditor: View {
                     TextField("例如：去图书馆还书", text: $task.title)
                     Button { choosePlace = true } label: { LabeledContent("地点", value: task.place?.name ?? "选择地图位置") }
                     Stepper("预计用时 \(task.duration) 分钟", value: $task.duration, in: 5...720, step: 5)
+                    if let recommendation = tracker.recommendedMinutes(for: task.title) {
+                        Button("参考同名事项最近平均用时：\(recommendation)分钟") { task.duration = min(720, recommendation) }
+                    }
+                    if let source = task.sourceText { Text("来源：" + source).font(.caption).textSelection(.enabled) }
+                    if let id = task.sourcePhotoID {
+                        if let photo = photos.records.first(where: { $0.id == id }), photos.canRead {
+                            Button("查看来源截图") { sourcePhoto = photo }
+                        } else { Text("来源图片未索引或不在当前授权范围；保留的文字副本可在上方核对。 ").font(.caption) }
+                    }
                 }
                 Section {
                     Toggle("有固定开始时间", isOn: Binding(get: { task.fixedStart != nil }, set: { task.fixedStart = $0 ? 14 * 60 : nil }))
@@ -180,12 +217,13 @@ private struct DayTaskEditor: View {
                 }
             }
             .sheet(isPresented: $choosePlace) { DayPlacePicker(regionCenter: regionCenter) { task.place = $0 } }
+            .sheet(item: $sourcePhoto) { PhotoDetailView(photo: $0) }
         }
     }
 }
 
 @MainActor
-private struct DayPlacePicker: View {
+struct DayPlacePicker: View {
     let regionCenter: DayPlace?
     let choose: (DayPlace) -> Void
     @Environment(\.dismiss) private var dismiss
@@ -237,7 +275,7 @@ private struct DayPlacePicker: View {
     }
 }
 
-private struct DayClockPicker: View {
+struct DayClockPicker: View {
     let title: String
     @Binding var minute: Int
     init(_ title: String, minute: Binding<Int>) { self.title = title; _minute = minute }
