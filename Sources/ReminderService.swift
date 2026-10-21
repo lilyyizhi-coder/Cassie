@@ -197,17 +197,19 @@ struct ReminderSettingsView: View {
                     Text("当前通知状态不可用，请在系统设置中检查 Cassie 的通知权限。")
                 }
             }
-            Section("任务与截止") {
+            Section {
                 Toggle("任务出发提醒", isOn: $reminders.settings.planEnabled)
                 Toggle("作业截止提醒", isOn: $reminders.settings.deadlineEnabled)
                 if reminders.settings.deadlineEnabled {
                     Stepper("截止前 \(reminders.settings.deadlineLeadMinutes) 分钟提醒",
                             value: $reminders.settings.deadlineLeadMinutes, in: 10...240, step: 10)
                 }
+            } header: {
+                Text("任务与截止")
             } footer: {
                 Text("按已生成的 Dayplan 方案，在每段出发时间和截止时间前发本机通知。生成、重排方案或在计划页勾选完成后自动重新安排；没有方案时不提醒。")
             }
-            Section("上课出发") {
+            Section {
                 Toggle("上课出发提醒", isOn: $reminders.settings.classEnabled)
                 if reminders.settings.classEnabled {
                     Stepper("去教室走路约 \(reminders.settings.classWalkMinutes) 分钟",
@@ -221,6 +223,8 @@ struct ReminderSettingsView: View {
                         Text("7 天内的课").tag(7)
                     }
                 }
+            } header: {
+                Text("上课出发")
             } footer: {
                 Text("按所选课表的上课时间倒推。换教室也按同一设置提醒；不读取实时位置，走路分钟数请按你最远的教学楼调整。")
             }
